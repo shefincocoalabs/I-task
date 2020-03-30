@@ -112,7 +112,7 @@ function tasksController(methods, options) {
   };
 
 //   *** Delete tasks ***  Author: Shefin S
-  this.deleteTask = (req, res) => {
+  this.deleteTask = async(req, res) => {
     var taskId = req.params.id;
     var isValidId = ObjectId.isValid(taskId);
     if (!isValidId) {
@@ -150,7 +150,7 @@ function tasksController(methods, options) {
 
 //   *** Update Tasks ***  Author: Shefin S
 
-  this.updateTask = (req, res) => {
+  this.updateTask = async(req, res) => {
     var taskId = req.params.id;
     var taskName = req.body.taskName;
     var dueDate = req.body.dueDate;

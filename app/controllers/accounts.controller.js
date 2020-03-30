@@ -144,7 +144,7 @@ function accountsController(methods, options) {
   };
 
 //   **** Update Profile ****  Author: Shefin S
-  this.updateProfile = (req, res) => {
+  this.updateProfile = async(req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
     var fullName = req.body.fullName;
