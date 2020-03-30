@@ -10,8 +10,7 @@ function tasksController(methods, options) {
     var projectName = req.body.projectName;
     var dueDate = req.body.dueDate;
     var description = req.body.description;
-    var role = req.body.role;
-    if (!taskName || !projectName || !dueDate || !description || !role) {
+    if (!taskName || !projectName || !dueDate || !description) {
       var errors = [];
       if (!taskName) {
         errors.push({
@@ -37,12 +36,6 @@ function tasksController(methods, options) {
           message: "ProjectName cannot be empty"
         });
       }
-      if (!role) {
-        errors.push({
-          field: "role",
-          message: "Role cannot be empty"
-        });
-      }
       return res.send({
         success: 0,
         statusCode: 400,
@@ -54,7 +47,6 @@ function tasksController(methods, options) {
       taskName: taskName,
       dueDate: dueDate,
       description: description,
-      role: role,
       taskCreatedBy: userId,
       status: 1,
       tsCreatedAt: Number(moment().unix()),
@@ -73,7 +65,7 @@ function tasksController(methods, options) {
     }
 
   };
-  this.listTask = async(req, res) => {
+  this.listTask = async (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
     var params = req.query;
@@ -87,13 +79,13 @@ function tasksController(methods, options) {
       limit: perPage
     };
     var filters = {
-     taskCreatedBy: userId
+      taskCreatedBy: userId
     };
     var queryProjection = {
 
     };
     try {
-      var taskList = await Task.find(filters,queryProjection,pageParams);
+      var taskList = await Task.find(filters, queryProjection, pageParams).limit(perPage);
       var itemsCount = await Task.countDocuments({
         taskCreatedBy: userId
       });
@@ -111,6 +103,95 @@ function tasksController(methods, options) {
         totalPages: totalPages,
         message: 'Tasks listed successfully'
       })
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  this.deleteTask = (req, res) => {
+    var taskId = req.params.id;
+    var isValidId = ObjectId.isValid(taskId);
+    if (!isValidId) {
+      var responseObj = {
+        success: 0,
+        status: 401,
+        errors: [{
+          field: "id",
+          message: "id is invalid"
+        }]
+      }
+      res.send(responseObj);
+      return;
+    };
+    var filter = {
+      _id: taskId
+    };
+    var update = {
+      status: 0
+    };
+    try {
+      let deleteTask = await Task.update(filter, update, {
+        new: true
+      });
+      res.send({
+        success: 1,
+        statusCode: 200,
+        message: 'Task deleted successfully'
+      })
+    } catch (err) {
+      console.error(err);
+    };
+
+  };
+
+  this.updateTask = (req, res) => {
+    var taskId = req.params.id;
+    var taskName = req.body.taskName;
+    var dueDate = req.body.dueDate;
+    var description = req.body.description;
+    var projectName = req.body.projectName
+    var isValidId = ObjectId.isValid(taskId);
+    if (!isValidId) {
+      var responseObj = {
+        success: 0,
+        status: 401,
+        errors: [{
+          field: "id",
+          message: "id is invalid"
+        }]
+      }
+      res.send(responseObj);
+      return;
+    };
+    if (!taskName && !description && !dueDate && !projectName) {
+      return res.send({
+        success: 0,
+        statusCode: 401,
+        message: 'Nothing to update'
+      })
+    };
+    var update = {};
+    if (taskName) {
+      update.taskName = taskName
+    };
+    if (dueDate) {
+      update.dueDate = dueDate
+    };
+    if (description) {
+      update.description = description
+    };
+    if (projectName) {
+        update.projectName = projectName
+      };
+    var filter = {
+      _id: taskId
+    };
+    try {
+      var updateTask = await MemberTask.update(filter, update);
+      res.send({
+        success: 1,
+        statusCode: 200,
+        message: 'Task updated successfully'
+      });
     } catch (err) {
       console.error(err);
     }

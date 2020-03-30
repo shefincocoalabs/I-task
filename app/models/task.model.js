@@ -27,7 +27,6 @@ const TaskSchema = mongoose.Schema({
     projectName: String,
     dueDate: String,
     description: String,
-    role: String,
     taskCreatedBy: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
     status: Number,
     tsCreatedAt: Number,

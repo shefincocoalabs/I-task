@@ -9,4 +9,7 @@ module.exports = {
   tasks: {
     resultsPerPage: 30,
   },
+  projects: {
+    resultsPerPage: 30,
+  },
 }
