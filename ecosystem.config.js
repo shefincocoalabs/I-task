@@ -1,7 +1,7 @@
 module.exports = {
     apps : [
     {
-      name: 'Accounts Haritha Keralam Microservices',
+      name: 'Accounts I-task Microservices',
       script: 'accounts.service.js',
       // Options reference: https://pm2.io/doc/en/runtime/reference/ecosystem-file/
       instances: 1,
@@ -11,12 +11,12 @@ module.exports = {
       //cron_restart
       env: {
         NODE_ENV: 'development',
-        port : 7002
+        port : 5001
       }
     },
     {
-      name: 'Surveys - Haritha Keralam Microservices',
-      script: 'surveys.service.js',
+      name: 'Member I-task Microservices',
+      script: 'members.service.js',
       // Options reference: https://pm2.io/doc/en/runtime/reference/ecosystem-file/
       instances: 1,
       autorestart: true,
@@ -25,7 +25,35 @@ module.exports = {
       //cron_restart
       env: {
         NODE_ENV: 'development',
-        port : 7001
+        port : 5002
+      }
+    },
+    {
+      name: 'Tasks I-task Microservices',
+      script: 'tasks.service.js',
+      // Options reference: https://pm2.io/doc/en/runtime/reference/ecosystem-file/
+      instances: 1,
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '1G',
+      //cron_restart
+      env: {
+        NODE_ENV: 'development',
+        port : 5003
+      }
+    },
+    {
+      name: 'Projects I-task Microservices',
+      script: 'projects.service.js',
+      // Options reference: https://pm2.io/doc/en/runtime/reference/ecosystem-file/
+      instances: 1,
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '1G',
+      //cron_restart
+      env: {
+        NODE_ENV: 'development',
+        port : 5004
       }
     }
     ]
