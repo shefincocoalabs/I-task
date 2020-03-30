@@ -5,5 +5,8 @@ module.exports = {
   },
   members: {
     resultsPerPage: 30,
-},
+  },
+  tasks: {
+    resultsPerPage: 30,
+  },
 }

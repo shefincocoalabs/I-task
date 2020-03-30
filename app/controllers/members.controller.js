@@ -120,7 +120,7 @@ function memberController(methods, options) {
 
   };
 
-// *** Get personal info of a member ***
+  // *** Get personal info of a member ***
   this.personalInfo = async (req, res) => {
     var memberId = req.params.id;
     var isValidId = ObjectId.isValid(memberId);
@@ -152,7 +152,7 @@ function memberController(methods, options) {
     }
   };
 
-// **** Add task to a member ****
+  // **** Add task to a member ****
   this.addTask = async (req, res) => {
     var taskName = req.body.taskName;
     var dueDate = req.body.dueDate;
@@ -195,7 +195,10 @@ function memberController(methods, options) {
       taskName: taskName,
       memberId: memberId,
       dueDate: dueDate,
-      description: description
+      description: description,
+      status: 1,
+      tsCreatedAt: Number(moment().unix()),
+      tsModifiedAt: null
     });
     try {
       let saveNewTask = await newTask.save();
@@ -209,8 +212,8 @@ function memberController(methods, options) {
     };
   };
 
-// *** List task of a member ***
-  this.listTask = async(req, res) => {
+  // *** List task of a member ***
+  this.listTask = async (req, res) => {
     var memberId = req.params.id;
     var isValidId = ObjectId.isValid(memberId);
     if (!isValidId) {
@@ -236,7 +239,8 @@ function memberController(methods, options) {
       limit: perPage
     };
     var filters = {
-      memberId: memberId
+      memberId: memberId,
+      status: 1
     };
     var queryProjection = {
 
@@ -244,7 +248,7 @@ function memberController(methods, options) {
     try {
       let memberTask = await MemberTask.find(filters, queryProjection, pageParams);
       let itemsCount = await MemberTask.countDocuments(filters);
-      
+
       var totalPages = itemsCount / perPage;
       totalPages = Math.ceil(totalPages);
       var hasNextPage = page < totalPages;
@@ -263,6 +267,91 @@ function memberController(methods, options) {
       console.error(err);
     };
 
+  };
+  this.deleteTask = async (req, res) => {
+    var memberId = req.params.id;
+    var isValidId = ObjectId.isValid(memberId);
+    if (!isValidId) {
+      var responseObj = {
+        success: 0,
+        status: 401,
+        errors: [{
+          field: "id",
+          message: "id is invalid"
+        }]
+      }
+      res.send(responseObj);
+      return;
+    };
+    var filter = {
+      memberId: memberId
+    };
+    var update = {
+      status: 0
+    };
+    try {
+      let deleteTask = await MemberTask.update(filter, update, {
+        new: true
+      });
+      res.send({
+        success: 1,
+        statusCode: 200,
+        message: 'Task deleted successfully'
+      })
+    } catch (err) {
+      console.error(err);
+    };
+
+  };
+
+  this.updateTask = async (req, res) => {
+    var memberId = req.params.id;
+    var taskName = req.body.taskName;
+    var dueDate = req.body.dueDate;
+    var description = req.body.description;
+    var isValidId = ObjectId.isValid(memberId);
+    if (!isValidId) {
+      var responseObj = {
+        success: 0,
+        status: 401,
+        errors: [{
+          field: "id",
+          message: "id is invalid"
+        }]
+      }
+      res.send(responseObj);
+      return;
+    };
+    if (!taskName && !description && !dueDate) {
+      return res.send({
+        success: 0,
+        statusCode: 401,
+        message: 'Nothing to update'
+      })
+    };
+    var update = {};
+    if (taskName) {
+      update.taskName = taskName
+    };
+    if (dueDate) {
+      update.dueDate = dueDate
+    };
+    if (description) {
+      update.description = description
+    };
+    var filter = {
+      memberId: memberId
+    };
+    try {
+      var updateTask = await MemberTask.update(filter, update);
+      res.send({
+        success: 1,
+        statusCode: 200,
+        message: 'Task updated successfully'
+      });
+    } catch (err) {
+      console.error(err);
+    }
   }
 }
 module.exports = memberController
