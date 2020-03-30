@@ -1,9 +1,9 @@
 module.exports = {
   development: {
-    url: 'mongodb+srv://i-task:developer@cluster0-3jxgx.mongodb.net/test?authSource=admin&replicaSet=Cluster0-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true'
+    url: 'mongodb+srv://developer:T4zs9mYUTrkWj37@edu2-os2mq.mongodb.net/i-task?authSource=admin&replicaSet=Edu2-shard-0&w=majority&readPreference=primary&appname=MongoDB%20Compass&retryWrites=true&ssl=true'
   },
   qa: {
-    url: 'mongodb+srv://i-task:developer@cluster0-3jxgx.mongodb.net/test?authSource=admin&replicaSet=Cluster0-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true'
+    url: 'mongodb+srv://developer:T4zs9mYUTrkWj37@edu2-os2mq.mongodb.net/i-task?authSource=admin&replicaSet=Edu2-shard-0&w=majority&readPreference=primary&appname=MongoDB%20Compass&retryWrites=true&ssl=true'
   }
 
 }
