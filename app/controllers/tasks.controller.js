@@ -3,6 +3,7 @@ function tasksController(methods, options) {
   var config = require('../../config/app.config.js');
   var tasksConfig = config.tasks;
   var moment = require('moment');
+//   *** Add new task *** Author: Shefin S
   this.addTask = (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
@@ -65,6 +66,8 @@ function tasksController(methods, options) {
     }
 
   };
+
+//   *** List added tasks  Author: Shefin S
   this.listTask = async (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
@@ -107,6 +110,8 @@ function tasksController(methods, options) {
       console.error(err);
     }
   };
+
+//   *** Delete tasks ***  Author: Shefin S
   this.deleteTask = (req, res) => {
     var taskId = req.params.id;
     var isValidId = ObjectId.isValid(taskId);
@@ -142,6 +147,8 @@ function tasksController(methods, options) {
     };
 
   };
+
+//   *** Update Tasks ***  Author: Shefin S
 
   this.updateTask = (req, res) => {
     var taskId = req.params.id;
@@ -195,6 +202,6 @@ function tasksController(methods, options) {
     } catch (err) {
       console.error(err);
     }
-  }
+  };
 }
 module.exports = tasksController

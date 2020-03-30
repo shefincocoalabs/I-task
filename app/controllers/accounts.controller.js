@@ -5,7 +5,7 @@ function accountsController(methods, options) {
   var moment = require('moment');
   var jwt = require('jsonwebtoken');
 
-  //   **** Sign-up ****
+  //   **** Sign-up **** Author: Shefin S
   this.signUp = async (req, res) => {
     var fullName = req.body.fullName;
     var phone = req.body.phone;
@@ -80,7 +80,7 @@ function accountsController(methods, options) {
     }
   };
 
-  //   **** Login ****
+  //   **** Login ****  Author: Shefin S
 
   this.login = async (req, res) => {
     var email = req.body.email;
@@ -141,6 +141,49 @@ function accountsController(methods, options) {
     } catch (err) {
       console.error(err);
     }
-  }
+  };
+
+//   **** Update Profile ****  Author: Shefin S
+  this.updateProfile = (req, res) => {
+    var userData = req.identity.data;
+    var userId = userData.userId;
+    var fullName = req.body.fullName;
+    var email = req.body.email;
+    var phone = req.body.phone;
+    var position = req.body.position
+    if (!fullName && !email && !phone && !position) {
+      return res.send({
+        success: 0,
+        statusCode: 401,
+        message: 'Nothing to update'
+      })
+    };
+    var update = {};
+    if (fullName) {
+      update.fullName = fullName;
+    };
+    if (email) {
+      update.email = email;
+    };
+    if (phone) {
+      update.phone = phone;
+    };
+    if (position) {
+        update.position = position;
+      };
+    var filter = {
+      _id: userId
+    };
+    try {
+      var updateTask = await MemberTask.update(filter, update);
+      res.send({
+        success: 1,
+        statusCode: 200,
+        message: 'User updated successfully'
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
 }
 module.exports = accountsController

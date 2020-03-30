@@ -6,7 +6,7 @@ function memberController(methods, options) {
   var moment = require('moment');
   var ObjectId = require('mongoose').Types.ObjectId;
 
-  //   **** Add a new member ****
+  //   **** Add a new member ****  Author: Shefin S
   this.addMember = async (req, res) => {
     var fullName = req.body.fullName;
     var email = req.body.email;
@@ -78,7 +78,7 @@ function memberController(methods, options) {
     }
   };
 
-  //   **** List-members ****
+  //   **** List-members ****  Author: Shefin S
 
   this.listMember = async (req, res) => {
     var params = req.query;
@@ -120,7 +120,7 @@ function memberController(methods, options) {
 
   };
 
-  // *** Get personal info of a member ***
+  // *** Get personal info of a member ***  Author: Shefin S
   this.personalInfo = async (req, res) => {
     var memberId = req.params.id;
     var isValidId = ObjectId.isValid(memberId);
@@ -152,7 +152,7 @@ function memberController(methods, options) {
     }
   };
 
-  // **** Add task to a member ****
+  // **** Add task to a member ****  Author: Shefin S
   this.addTask = async (req, res) => {
     var taskName = req.body.taskName;
     var dueDate = req.body.dueDate;
@@ -212,7 +212,7 @@ function memberController(methods, options) {
     };
   };
 
-  // *** List task of a member ***
+  // *** List task of a member ***  Author: Shefin S
   this.listTask = async (req, res) => {
     var memberId = req.params.id;
     var isValidId = ObjectId.isValid(memberId);
@@ -268,6 +268,7 @@ function memberController(methods, options) {
     };
 
   };
+//   **** Delete task for a member ****  Author: Shefin S
   this.deleteTask = async (req, res) => {
     var memberId = req.params.id;
     var isValidId = ObjectId.isValid(memberId);
@@ -303,6 +304,8 @@ function memberController(methods, options) {
     };
 
   };
+
+//   **** Update Task for member ****  Author: Shefin S
 
   this.updateTask = async (req, res) => {
     var memberId = req.params.id;
@@ -352,6 +355,6 @@ function memberController(methods, options) {
     } catch (err) {
       console.error(err);
     }
-  }
+  };
 }
 module.exports = memberController

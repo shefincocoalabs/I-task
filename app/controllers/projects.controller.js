@@ -5,6 +5,7 @@ function projectController(methods, options) {
   var config = require('../../config/app.config.js');
   var ObjectId = require('mongoose').Types.ObjectId;
   var projectsConfig = config.projects;
+//   *** Create Project *** Author: Shefin S
   this.addProject = async (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
@@ -60,7 +61,7 @@ function projectController(methods, options) {
       console.error(err);
     }
   };
-
+// **** List Projects **** Author: Shefin S
   this.listProject = async (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
@@ -103,7 +104,8 @@ function projectController(methods, options) {
     };
   };
 
-  this.getProjectDetail = async(req, res) => {
+//   **** Get project detail **** Author: Shefin S
+  this.getProjectDetail = async (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
     var projectId = req.params.id;
@@ -125,7 +127,7 @@ function projectController(methods, options) {
       projectCreatedBy: userId
     };
     try {
-      let projectData = await Project.findOne(filters).populate('members',Members);
+      let projectData = await Project.findOne(filters).populate('members', Members);
       res.send({
         success: 1,
         statusCode: 200,
@@ -136,6 +138,6 @@ function projectController(methods, options) {
       console.error(err);
     }
 
-  }
+  };
 }
 module.exports = projectController
