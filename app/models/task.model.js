@@ -28,7 +28,6 @@ const TaskSchema = mongoose.Schema({
     dueDate: String,
     description: String,
     taskCreatedBy: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
-    taskId: {type: mongoose.Schema.Types.ObjectId, ref: 'Task'},
     projectId: {type: mongoose.Schema.Types.ObjectId, ref: 'Project'},
     status: Number,
     tsCreatedAt: Number,

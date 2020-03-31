@@ -1,6 +1,7 @@
 function projectController(methods, options) {
   var Project = require('../models/project.model.js');
   var Members = require('../models/member.model.js');
+  var MemberTask = require('../models/memberTask.model.js');
   var Task = require('../models/task.model.js');
   var moment = require('moment');
   var config = require('../../config/app.config.js');
@@ -13,11 +14,7 @@ function projectController(methods, options) {
     var projectName = req.body.projectName;
     var dueDate = req.body.dueDate;
     var description = req.body.description;
-    var fullName = req.body.memberName;
-    var email = req.body.email;
-    var phone = req.body.phone;
-    var position = req.body.position;
-    var tasks = req.body.tasks;
+    var memberId = req.body.memberId;
     if (!projectName || !dueDate || !description) {
       var errors = [];
       if (!dueDate) {
@@ -44,16 +41,6 @@ function projectController(methods, options) {
         errors: errors,
       });
     }
-    const newMember = new Members({
-      fullName: fullName,
-      email: email,
-      phone: phone,
-      position: position,
-      tasks: tasks,
-      status: 1,
-      tsCreatedAt: Number(moment().unix()),
-      tsModifiedAt: null
-    });
     const newProject = new Project({
       projectName: projectName,
       dueDate: dueDate,
@@ -66,14 +53,13 @@ function projectController(methods, options) {
 
     try {
       let saveNewProject = await newProject.save();
-      let saveNewProjectMember = await newMember.save();
       var filter = {
-        _id: saveNewProjectMember._id
+        memberId: memberId
       };
       var update = {
         projectId: saveNewProject._id
       };
-      let updateMemberData = await Members.update(filter, update);
+      let updateMemberData = await MemberTask.update(filter, update);
       res.send({
         success: 1,
         statusCode: 200,
@@ -83,6 +69,43 @@ function projectController(methods, options) {
       console.error(err);
     }
   };
+
+  this.addProjectMember = async(req, res) => {
+    var memberId = req.body.memberId;
+    var tasks = req.body.taskIds;
+    if (!memberId) {
+      var errors = [];
+      if (!memberId) {
+        errors.push({
+          field: "memberId",
+          message: "MemberId cannot be empty"
+        });
+      }
+      return res.send({
+        success: 0,
+        statusCode: 400,
+        errors: errors,
+      });
+    }
+    const newMemberTask = new MemberTask({
+      memberId: memberId,
+      tasks: tasks,
+      status: 1,
+      tsCreatedAt: Number(moment().unix()),
+      tsModifiedAt: null
+    });
+
+    try {
+      let saveNewMemberTask = await newMemberTask.save();
+      res.send({
+        success: 1,
+        statusCode: 200,
+        message: 'Project member added successfully'
+      })
+    } catch (err) {
+      console.error(err);
+    }
+  }
   // **** List Projects **** Author: Shefin S
   this.listProject = async (req, res) => {
     var userData = req.identity.data;
@@ -148,11 +171,19 @@ function projectController(methods, options) {
       _id: projectId,
       projectCreatedBy: userId
     };
+    var dataProjection = {
+      description: 1,
+      dueDate: 1
+    };
+    var queryProjection = {
+      tasks: 1,
+      memberId: 1
+    };
     try {
-      let projectData = await Project.findOne(filters).populate('members', Members);
-      let projectMembersData = await Members.find({
+      let projectData = await Project.findOne(filters, dataProjection);
+      let projectMembersData = await MemberTask.find({
         projectId: projectId
-      }).populate('tasks', Task)
+      }, queryProjection).populate('tasks', Task).populate('memberId', Members);
       res.send({
         success: 1,
         statusCode: 200,

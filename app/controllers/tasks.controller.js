@@ -1,5 +1,6 @@
 function tasksController(methods, options) {
   var Task = require('../models/task.model.js');
+  var MemberTask = require('../models/memberTask.model.js');
   var Member = require('../models/member.model.js');
   var config = require('../../config/app.config.js');
   var tasksConfig = config.tasks;
@@ -9,11 +10,10 @@ function tasksController(methods, options) {
     var userData = req.identity.data;
     var userId = userData.userId;
     var taskName = req.body.taskName;
-    var projectName = req.body.projectName;
     var projectId = req.body.projectId;
     var dueDate = req.body.dueDate;
     var description = req.body.description;
-    if (!taskName || !projectName || !dueDate || !description) {
+    if (!taskName || !projectId || !dueDate || !description) {
       var errors = [];
       if (!taskName) {
         errors.push({
@@ -33,10 +33,10 @@ function tasksController(methods, options) {
           message: "Description cannot be empty"
         });
       }
-      if (!projectName) {
+      if (!projectId) {
         errors.push({
-          field: "projectName",
-          message: "ProjectName cannot be empty"
+          field: "projectId",
+          message: "ProjectId cannot be empty"
         });
       }
       return res.send({
@@ -46,7 +46,6 @@ function tasksController(methods, options) {
       });
     };
     const newTask = new Task({
-      projectName: projectName,
       projectId: projectId,
       taskName: taskName,
       dueDate: dueDate,
@@ -130,10 +129,10 @@ function tasksController(methods, options) {
       description: 1
     };
     try {
-      let taskDetail = await Task.find(findCriteria,queryProjection);
-      let taskMembers = await Member.find({
+      let taskDetail = await Task.find(findCriteria, queryProjection);
+      let taskMembers = await MemberTask.find({
         tasks: taskId
-      });
+      }).populate('memberId', Member)
       res.send({
         success: 1,
         statusCode: 200,

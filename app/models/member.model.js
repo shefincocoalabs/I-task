@@ -28,8 +28,6 @@ const MemberSchema = mongoose.Schema({
     image: String,
     phone: String,
     position: String,
-    projectId: {type: mongoose.Schema.Types.ObjectId, ref: 'Project'},
-    tasks: [{type: mongoose.Schema.Types.ObjectId, ref: 'Task'}],
     status: Number,
     tsCreatedAt: Number,
     tsModifiedAt: Number

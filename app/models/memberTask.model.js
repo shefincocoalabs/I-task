@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 
 function transform(ret) {
     ret.id = ret._id;
+    ret.projectMemberDetails = ret.memberId;
+    delete ret.memberId;
     delete ret._id;
     delete ret.status;
     delete ret.tsCreatedAt;
@@ -23,10 +25,8 @@ var options = {
 };
 
 const MemberTaskSchema = mongoose.Schema({
-    taskName: String,
-    dueDate: String,
-    description: String,
     memberId: { type: mongoose.Schema.Types.ObjectId, ref: 'Member' },
+    tasks: [{type: mongoose.Schema.Types.ObjectId, ref: 'Task'}],
     status: Number,
     tsCreatedAt: Number,
     tsModifiedAt: Number
