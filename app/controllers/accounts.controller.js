@@ -134,7 +134,7 @@ function accountsController(methods, options) {
       res.send({
         success: 1,
         statusCode: 200,
-        message: 'User logged in successully',
+        message: 'User logged in successfully',
         token: token,
         userDetails: payload
       });
