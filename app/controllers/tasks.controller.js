@@ -1,14 +1,16 @@
 function tasksController(methods, options) {
   var Task = require('../models/task.model.js');
+  var Member = require('../models/member.model.js');
   var config = require('../../config/app.config.js');
   var tasksConfig = config.tasks;
   var moment = require('moment');
-//   *** Add new task *** Author: Shefin S
+  //   *** Add new task *** Author: Shefin S
   this.addTask = (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
     var taskName = req.body.taskName;
     var projectName = req.body.projectName;
+    var projectId = req.body.projectId;
     var dueDate = req.body.dueDate;
     var description = req.body.description;
     if (!taskName || !projectName || !dueDate || !description) {
@@ -45,6 +47,7 @@ function tasksController(methods, options) {
     };
     const newTask = new Task({
       projectName: projectName,
+      projectId: projectId,
       taskName: taskName,
       dueDate: dueDate,
       description: description,
@@ -67,7 +70,7 @@ function tasksController(methods, options) {
 
   };
 
-//   *** List added tasks  Author: Shefin S
+  //   *** List added tasks  Author: Shefin S
   this.listTask = async (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
@@ -111,8 +114,41 @@ function tasksController(methods, options) {
     }
   };
 
-//   *** Delete tasks ***  Author: Shefin S
-  this.deleteTask = async(req, res) => {
+  // *** Get task details ***  Author: Shefin S
+  this.detailTask = async (req, res) => {
+    var userData = req.identity.data;
+    var userId = userData.userId;
+    var taskId = req.params.id;
+    var findCriteria = {
+      _id: taskId,
+      taskCreatedBy: userId
+    };
+    var queryProjection = {
+      projectName: 1,
+      taskName: 1,
+      dueDate: 1,
+      description: 1
+    };
+    try {
+      let taskDetail = await Task.find(findCriteria,queryProjection);
+      let taskMembers = await Member.find({
+        tasks: taskId
+      });
+      res.send({
+        success: 1,
+        statusCode: 200,
+        taskDetails: taskDetail,
+        taskMembers: taskMembers,
+        message: 'Task detail fetched successfully'
+      })
+    } catch (err) {
+      console.error(err);
+    }
+
+  };
+
+  //   *** Delete tasks ***  Author: Shefin S
+  this.deleteTask = async (req, res) => {
     var taskId = req.params.id;
     var isValidId = ObjectId.isValid(taskId);
     if (!isValidId) {
@@ -148,9 +184,9 @@ function tasksController(methods, options) {
 
   };
 
-//   *** Update Tasks ***  Author: Shefin S
+  //   *** Update Tasks ***  Author: Shefin S
 
-  this.updateTask = async(req, res) => {
+  this.updateTask = async (req, res) => {
     var taskId = req.params.id;
     var taskName = req.body.taskName;
     var dueDate = req.body.dueDate;
@@ -187,8 +223,8 @@ function tasksController(methods, options) {
       update.description = description
     };
     if (projectName) {
-        update.projectName = projectName
-      };
+      update.projectName = projectName
+    };
     var filter = {
       _id: taskId
     };

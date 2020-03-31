@@ -190,7 +190,7 @@ function memberController(methods, options) {
         statusCode: 400,
         errors: errors,
       });
-    };
+    }; 
 
     const newTask = new MemberTask({
       taskName: taskName,
