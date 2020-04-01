@@ -363,6 +363,7 @@ function accountsController(methods, options) {
     var password = req.body.password;
     var confirmPassword = req.body.confirmPassword;
     var passwordResetToken = req.body.passwordResetToken;
+    var phone = req.body.phone;
     if (!password || !confirmPassword || !phone || !passwordResetToken) {
       var errors = [];
       if (!password) {
