@@ -30,6 +30,16 @@ const ProjectSchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
+  members: [{
+    member: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Member'
+    },
+    tasks: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Task'
+    }]
+  }],
   status: Number,
   tsCreatedAt: Number,
   tsModifiedAt: Number

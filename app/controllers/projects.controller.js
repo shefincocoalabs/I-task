@@ -14,7 +14,7 @@ function projectController(methods, options) {
     var projectName = req.body.projectName;
     var dueDate = req.body.dueDate;
     var description = req.body.description;
-    var memberId = req.body.memberId;
+    var members = req.body.members;
     if (!projectName || !dueDate || !description) {
       var errors = [];
       if (!dueDate) {
@@ -40,12 +40,13 @@ function projectController(methods, options) {
         statusCode: 400,
         errors: errors,
       });
-    }
+    };
     const newProject = new Project({
       projectName: projectName,
       dueDate: dueDate,
       description: description,
       projectCreatedBy: userId,
+      members: members,
       status: 1,
       tsCreatedAt: Number(moment().unix()),
       tsModifiedAt: null
@@ -53,13 +54,6 @@ function projectController(methods, options) {
 
     try {
       let saveNewProject = await newProject.save();
-      var filter = {
-        memberId: memberId
-      };
-      var update = {
-        projectId: saveNewProject._id
-      };
-      let updateMemberData = await MemberTask.update(filter, update);
       res.send({
         success: 1,
         statusCode: 200,
@@ -70,42 +64,6 @@ function projectController(methods, options) {
     }
   };
 
-  this.addProjectMember = async(req, res) => {
-    var memberId = req.body.memberId;
-    var tasks = req.body.taskIds;
-    if (!memberId) {
-      var errors = [];
-      if (!memberId) {
-        errors.push({
-          field: "memberId",
-          message: "MemberId cannot be empty"
-        });
-      }
-      return res.send({
-        success: 0,
-        statusCode: 400,
-        errors: errors,
-      });
-    }
-    const newMemberTask = new MemberTask({
-      memberId: memberId,
-      tasks: tasks,
-      status: 1,
-      tsCreatedAt: Number(moment().unix()),
-      tsModifiedAt: null
-    });
-
-    try {
-      let saveNewMemberTask = await newMemberTask.save();
-      res.send({
-        success: 1,
-        statusCode: 200,
-        message: 'Project member added successfully'
-      })
-    } catch (err) {
-      console.error(err);
-    }
-  }
   // **** List Projects **** Author: Shefin S
   this.listProject = async (req, res) => {
     var userData = req.identity.data;
@@ -126,9 +84,16 @@ function projectController(methods, options) {
     var queryProjection = {
 
     };
-    var projectObj = {};
     try {
       let listProjects = await Project.find(filters, queryProjection, pageParams).limit(perPage);
+      var items = [];
+      for (let i = 0; i < listProjects.length; i++) {
+        items.push({
+          projectName: listProjects[i].projectName,
+          dueDate: listProjects[i].dueDate,
+          totalProjectMembers: listProjects[i].members.length
+        })
+      };
       let itemsCount = await Project.countDocuments(filters);
       var totalPages = itemsCount / perPage;
       totalPages = Math.ceil(totalPages);
@@ -136,7 +101,7 @@ function projectController(methods, options) {
       res.send({
         success: 1,
         statusCode: 200,
-        items: listProjects,
+        items: items,
         page: page,
         perPage: perPage,
         hasNextPage: hasNextPage,
@@ -171,24 +136,22 @@ function projectController(methods, options) {
       _id: projectId,
       projectCreatedBy: userId
     };
-    var dataProjection = {
-      description: 1,
-      dueDate: 1
-    };
-    var queryProjection = {
-      tasks: 1,
-      memberId: 1
-    };
     try {
-      let projectData = await Project.findOne(filters, dataProjection);
-      let projectMembersData = await MemberTask.find({
-        projectId: projectId
-      }, queryProjection).populate('tasks', Task).populate('memberId', Members);
+      let projectData = await Project.findOne(filters).populate('members.member', Members);
+      let projectDetails = {};
+      projectDetails.projectName = projectData.projectName;
+      projectDetails.dueDate = projectData.dueDate;
+      projectDetails.description = projectData.description;
+      let membersArray = projectData.members;
+      var items = [];
+      for (let i = 0; i < membersArray.length; i++) {
+        items.push(membersArray[i].member)
+      };
       res.send({
         success: 1,
         statusCode: 200,
-        projectDetails: projectData,
-        projectMembersData: projectMembersData,
+        projectDetails: projectDetails,
+        projectMembers: items,
         message: 'Project details fetched successfully'
       })
     } catch (err) {

@@ -155,16 +155,16 @@ function memberController(methods, options) {
 
   // **** Add task to a member ****  Author: Shefin S
   this.addTask = async (req, res) => {
-    var taskName = req.body.taskName;
+    var tasks = req.body.tasks;
     var dueDate = req.body.dueDate;
     var description = req.body.description;
     var memberId = req.body.memberId;
     if (!taskName || !dueDate || !description || !memberId) {
       var errors = [];
-      if (!taskName) {
+      if (!tasks) {
         errors.push({
-          field: "taskName",
-          message: "Task name cannot be empty"
+          field: "tasks",
+          message: "Tasks cannot be empty"
         });
       }
       if (!dueDate) {
@@ -193,7 +193,7 @@ function memberController(methods, options) {
     }; 
 
     const newTask = new MemberTask({
-      taskName: taskName,
+      tasks: tasks,
       memberId: memberId,
       dueDate: dueDate,
       description: description,
