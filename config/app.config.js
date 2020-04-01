@@ -3,6 +3,9 @@ module.exports = {
   gateway: {
     url: "http://localhost:8000"
   },
+  otp: {
+    expirySeconds: 2 * 60
+  },
   members: {
     resultsPerPage: 30,
   },
