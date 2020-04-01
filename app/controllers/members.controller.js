@@ -1,6 +1,7 @@
 function memberController(methods, options) {
   var Member = require('../models/member.model.js');
   var MemberTask = require('../models/memberTask.model.js');
+  var Task = require('../models/task.model.js');
   var config = require('../../config/app.config.js');
   var membersConfig = config.members;
   var moment = require('moment');
@@ -159,7 +160,7 @@ function memberController(methods, options) {
     var dueDate = req.body.dueDate;
     var description = req.body.description;
     var memberId = req.body.memberId;
-    if (!taskName || !dueDate || !description || !memberId) {
+    if (!tasks || !dueDate || !description || !memberId) {
       var errors = [];
       if (!tasks) {
         errors.push({
@@ -190,7 +191,7 @@ function memberController(methods, options) {
         statusCode: 400,
         errors: errors,
       });
-    }; 
+    };
 
     const newTask = new MemberTask({
       tasks: tasks,
@@ -247,16 +248,24 @@ function memberController(methods, options) {
 
     };
     try {
-      let memberTask = await MemberTask.find(filters, queryProjection, pageParams);
+      let memberTask = await MemberTask.find(filters, queryProjection, pageParams).populate('tasks.taskIds', Task).populate('memberId', Member);
       let itemsCount = await MemberTask.countDocuments(filters);
-
+      let taskArray = memberTask[0].tasks.taskIds;
+      let items = [];
+      for (let i = 0; i < taskArray.length; i++) {
+        items.push({
+          taskName: taskArray[i].taskName,
+          dueDate: taskArray[i].dueDate,
+          member: memberTask[0].memberId
+        });
+      };
       var totalPages = itemsCount / perPage;
       totalPages = Math.ceil(totalPages);
       var hasNextPage = page < totalPages;
       res.send({
         success: 1,
         statusCode: 200,
-        items: memberTask,
+        items: items,
         page: page,
         perPage: perPage,
         hasNextPage: hasNextPage,
@@ -269,7 +278,7 @@ function memberController(methods, options) {
     };
 
   };
-//   **** Delete task for a member ****  Author: Shefin S
+  //   **** Delete task for a member ****  Author: Shefin S
   this.deleteTask = async (req, res) => {
     var memberId = req.params.id;
     var isValidId = ObjectId.isValid(memberId);
@@ -306,7 +315,7 @@ function memberController(methods, options) {
 
   };
 
-//   **** Update Task for member ****  Author: Shefin S
+  //   **** Update Task for member ****  Author: Shefin S
 
   this.updateTask = async (req, res) => {
     var memberId = req.params.id;

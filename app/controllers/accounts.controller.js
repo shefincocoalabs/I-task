@@ -11,7 +11,8 @@ function accountsController(methods, options) {
     var phone = req.body.phone;
     var email = req.body.email;
     var password = req.body.password;
-    if (!fullName || !email || !phone || !password) {
+    var confirmPassword = req.body.confirmPassword;
+    if (!fullName || !email || !phone || !password || !confirmPassword) {
       var errors = [];
       if (!fullName) {
         errors.push({
@@ -34,7 +35,13 @@ function accountsController(methods, options) {
       if (!password) {
         errors.push({
           field: "password",
-          message: "password cannot be empty"
+          message: "Password cannot be empty"
+        });
+      }
+      if (!confirmPassword) {
+        errors.push({
+          field: "confirmPassword",
+          message: "ConfirmPassword cannot be empty"
         });
       }
       return res.send({
@@ -42,6 +49,13 @@ function accountsController(methods, options) {
         statusCode: 400,
         errors: errors,
       });
+    };
+
+    if(password != confirmPassword) {
+      return res.send({
+        success: 0,
+        message: 'Password and confirrm password fields should be same'
+      })
     };
 
     const newRegistration = new Users({
