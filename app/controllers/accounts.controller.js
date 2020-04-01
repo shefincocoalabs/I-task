@@ -190,7 +190,7 @@ function accountsController(methods, options) {
       _id: userId
     };
     try {
-      var updateTask = await MemberTask.update(filter, update);
+      var updateUser = await Users.update(filter, update);
       res.send({
         success: 1,
         statusCode: 200,
