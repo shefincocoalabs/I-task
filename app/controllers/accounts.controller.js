@@ -150,6 +150,20 @@ function accountsController(methods, options) {
             message: 'Incorrect user credentials'
           })
         };
+        var payload = {
+          userId: user._id,
+          fullName: user.fullName,
+          email: user.email,
+          phone: user.phone,
+          position: '',
+          type: 'Admin',
+          image: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
+        };
+        var token = jwt.sign({
+          data: payload,
+        }, JWT_KEY, {
+          expiresIn: '30 days'
+        });
       } else {
         user = await Members.findOne({
           email: email,
@@ -162,20 +176,21 @@ function accountsController(methods, options) {
             message: 'Incorrect user credentials'
           })
         };
+        var payload = {
+          userId: user._id,
+          fullName: user.fullName,
+          email: user.email,
+          phone: user.phone,
+          position: '',
+          type: 'Member',
+          image: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
+        };
+        var token = jwt.sign({
+          data: payload,
+        }, JWT_KEY, {
+          expiresIn: '30 days'
+        });
       }
-      var payload = {
-        userId: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        phone: user.phone,
-        position: '',
-        image: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
-      };
-      var token = jwt.sign({
-        data: payload,
-      }, JWT_KEY, {
-        expiresIn: '30 days'
-      });
       res.send({
         success: 1,
         statusCode: 200,
@@ -447,7 +462,6 @@ function accountsController(methods, options) {
   this.changePasssword = async (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
-    console.log(userId);
     var newPassword = req.body.newPassword;
     var confirmPassword = req.body.confirmPassword;
     if (!newPassword || !confirmPassword) {
