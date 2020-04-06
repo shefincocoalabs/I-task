@@ -28,6 +28,7 @@ const MemberSchema = mongoose.Schema({
     image: String,
     phone: String,
     position: String,
+    password: String,
     status: Number,
     tsCreatedAt: Number,
     tsModifiedAt: Number

@@ -1,5 +1,6 @@
 function accountsController(methods, options) {
   var Users = require('../models/user.model.js');
+  var Members = require('../models/member.model.js');
   var Otp = require('../models/otp.model.js');
   var config = require('../../config/app.config.js');
   var otpConfig = config.otp;
@@ -107,7 +108,9 @@ function accountsController(methods, options) {
   this.login = async (req, res) => {
     var email = req.body.email;
     var password = req.body.password;
-    if (!email || !password) {
+    var userType = req.body.userType;
+    let user;
+    if (!email || !password || !userType) {
       var errors = [];
       if (!email) {
         errors.push({
@@ -121,6 +124,12 @@ function accountsController(methods, options) {
           message: "password cannot be empty"
         });
       }
+      if (!userType) {
+        errors.push({
+          field: "userType",
+          message: "User type cannot be empty"
+        });
+      }
       return res.send({
         success: 0,
         statusCode: 400,
@@ -129,17 +138,31 @@ function accountsController(methods, options) {
     };
 
     try {
-      let user = await Users.findOne({
-        email: email,
-        password: password
-      });
-      if (!user) {
-        return res.send({
-          success: 0,
-          statusCode: 401,
-          message: 'Incorrect user credentials'
-        })
-      };
+      if (userType == 'Admin') {
+        user = await Users.findOne({
+          email: email,
+          password: password
+        });
+        if (!user) {
+          return res.send({
+            success: 0,
+            statusCode: 401,
+            message: 'Incorrect user credentials'
+          })
+        };
+      } else {
+        user = await Members.findOne({
+          email: email,
+          password: password
+        });
+        if (!user) {
+          return res.send({
+            success: 0,
+            statusCode: 401,
+            message: 'Incorrect user credentials'
+          })
+        };
+      }
       var payload = {
         userId: user._id,
         fullName: user.fullName,
@@ -160,11 +183,11 @@ function accountsController(methods, options) {
         token: token,
         userDetails: payload
       });
-
     } catch (err) {
       console.error(err);
     }
   };
+
 
   //   **** Update Profile ****  Author: Shefin S
 
@@ -419,6 +442,61 @@ function accountsController(methods, options) {
       statusCode: 200,
       message: 'Your password has been reset successfully'
     })
+  };
+
+  this.changePasssword = async (req, res) => {
+    var userData = req.identity.data;
+    var userId = userData.userId;
+    console.log(userId);
+    var newPassword = req.body.newPassword;
+    var confirmPassword = req.body.confirmPassword;
+    if (!newPassword || !confirmPassword) {
+      var errors = [];
+      if (!newPassword) {
+        errors.push({
+          field: "newPassword",
+          message: "New Password cannot be empty"
+        });
+      }
+      if (!confirmPassword) {
+        errors.push({
+          field: "confirmPassword",
+          message: "ConfirmPassword cannot be empty"
+        });
+      }
+      return res.send({
+        success: 0,
+        statusCode: 400,
+        errors: errors,
+      });
+    };
+    if (newPassword == confirmPassword) {
+      var filter = {
+        _id: userId
+      };
+      var update = {
+        password: newPassword
+      };
+      try {
+        let passwordUpdate = await Members.findOneAndUpdate(filter, update, {
+          new: true,
+          useFindAndModify: false
+        });
+        res.send({
+          success: 1,
+          statusCode: 200,
+          message: 'Password changed successfully'
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    } else {
+      res.send({
+        success: 0,
+        statusCode: 400,
+        message: 'Both new password and confirm password sholud be same'
+      })
+    }
   }
 }
 module.exports = accountsController

@@ -13,7 +13,8 @@ function memberController(methods, options) {
     var email = req.body.email;
     var phone = req.body.phone;
     var position = req.body.position;
-    if (!fullName || !email || !phone || !position) {
+    var password = req.body.password;
+    if (!fullName || !email || !phone || !position || !password) {
       var errors = [];
       if (!fullName) {
         errors.push({
@@ -35,6 +36,12 @@ function memberController(methods, options) {
       }
       if (!position) {
         errors.push({
+          field: "position",
+          message: "position cannot be empty"
+        });
+      }
+      if (!password) {
+        errors.push({
           field: "password",
           message: "password cannot be empty"
         });
@@ -52,6 +59,7 @@ function memberController(methods, options) {
       phone: phone,
       position: position,
       image: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png',
+      password: password,
       status: 1,
       tsCreatedAt: Number(moment().unix()),
       tsModifiedAt: null
