@@ -2,8 +2,10 @@ function tasksController(methods, options) {
   var Task = require('../models/task.model.js');
   var Project = require('../models/project.model.js');
   var MemberTask = require('../models/memberTask.model.js');
+  var TaskReport = require('../models/memberTaskReport.model.js');
   var Member = require('../models/member.model.js');
   var config = require('../../config/app.config.js');
+  var ObjectId = require('mongoose').Types.ObjectId;
   var tasksConfig = config.tasks;
   var moment = require('moment');
   //   *** Add new task *** Author: Shefin S
@@ -138,6 +140,16 @@ function tasksController(methods, options) {
     var userType = userData.type;
     var userId = userData.userId;
     var taskId = req.params.id;
+    var isValidId = ObjectId.isValid(taskId);
+    if (!isValidId) {
+      var responseObj = {
+        success: 0,
+        status: 401,
+        message: 'Id is invalid'
+      };
+      res.send(responseObj);
+      return;
+    };
     var findCriteria = {
       _id: taskId,
       taskCreatedBy: userId
@@ -203,6 +215,43 @@ function tasksController(methods, options) {
       console.error(err);
     }
 
+  };
+
+  // *** Submit task report for member *** Author: Shefin S
+
+  this.submitTaskReport = async (req, res) => {
+    var userData = req.identity.data;
+    var userId = userData.userId;
+    var taskId = req.params.id;
+    var notes = req.body.notes;
+    var isValidId = ObjectId.isValid(taskId);
+    if (!isValidId) {
+      var responseObj = {
+        success: 0,
+        status: 401,
+        message: 'Id is invalid'
+      }
+      res.send(responseObj);
+      return;
+    };
+    const newTaskReport = new TaskReport({
+      taskId: taskId,
+      memberId: userId,
+      notes: notes,
+      status: 1,
+      tsCreatedAt: Number(moment().unix()),
+      tsModifiedAt: null
+    });
+    try {
+      let saveNewTaskReport = await newTaskReport.save();
+      res.send({
+        success: 1,
+        statusCode: 200,
+        message: 'Task completed successfully'
+      });
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   //   *** Delete tasks ***  Author: Shefin S

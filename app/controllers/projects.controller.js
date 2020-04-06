@@ -124,10 +124,7 @@ function projectController(methods, options) {
       var responseObj = {
         success: 0,
         status: 401,
-        errors: [{
-          field: "id",
-          message: "id is invalid"
-        }]
+        message: 'Id is invalid'
       }
       res.send(responseObj);
       return;

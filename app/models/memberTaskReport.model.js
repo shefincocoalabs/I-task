@@ -27,7 +27,11 @@ const MemberTakReportSchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Task'
   },
-  Notes: String,
+  memberId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Member'
+  },
+  notes: String,
   status: Number,
   tsCreatedAt: Number,
   tsModifiedAt: Number
