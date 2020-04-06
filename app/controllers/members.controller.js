@@ -168,24 +168,13 @@ function memberController(methods, options) {
     var dueDate = req.body.dueDate;
     var description = req.body.description;
     var memberId = req.body.memberId;
-    if (!tasks || !dueDate || !description || !memberId) {
+    var projectId = req.body.projectId;
+    if (!tasks || !memberId || !projectId) {
       var errors = [];
       if (!tasks) {
         errors.push({
           field: "tasks",
           message: "Tasks cannot be empty"
-        });
-      }
-      if (!dueDate) {
-        errors.push({
-          field: "dueDate",
-          message: "Due date cannot be empty"
-        });
-      }
-      if (!description) {
-        errors.push({
-          field: "description",
-          message: "Description cannot be empty"
         });
       }
       if (!memberId) {
@@ -194,32 +183,51 @@ function memberController(methods, options) {
           message: "MemberId cannot be empty"
         });
       }
+      if (!projectId) {
+        errors.push({
+          field: "projectId",
+          message: "ProjectId cannot be empty"
+        });
+      }
       return res.send({
         success: 0,
         statusCode: 400,
         errors: errors,
       });
     };
-
-    const newTask = new MemberTask({
-      tasks: tasks,
-      memberId: memberId,
-      dueDate: dueDate,
-      description: description,
-      status: 1,
-      tsCreatedAt: Number(moment().unix()),
-      tsModifiedAt: null
-    });
     try {
-      let saveNewTask = await newTask.save();
-      res.send({
-        success: 1,
-        statusCode: 200,
-        message: 'New task added successfully'
-      });
+      let promiseArr = [];
+      tasks.forEach(async function (element) {
+        const newTask = new MemberTask({
+          taskId: element,
+          memberId: memberId,
+          projectId: projectId,
+          dueDate: dueDate,
+          description: description,
+          status: 1,
+          tsCreatedAt: Number(moment().unix()),
+          tsModifiedAt: null
+        });
+        let saveNewTask = await newTask.save();
+        promiseArr.push(element);
+
+      })
+      //now execute promise all
+      Promise.all(promiseArr)
+        .then((result) => res.send({
+          success: 1,
+          statusCode: 200,
+          message: 'New task added successfully'
+        }))
+        .catch((err) => res.send({
+          success: 0,
+          statusCode: 400,
+          message: err.message
+        }));
     } catch (err) {
       console.error(err);
     };
+
   };
 
   // *** List task of a member ***  Author: Shefin S

@@ -2,13 +2,7 @@ const mongoose = require('mongoose');
 
 function transform(ret) {
   ret.id = ret._id;
-  ret.task = ret.taskId;
-  ret.project = ret.projectId;
-  ret.member = ret.memberId;
   delete ret._id;
-  delete ret.taskId;
-  delete ret.projectId;
-  delete ret.memberId;
   delete ret.status;
   delete ret.tsCreatedAt;
   delete ret.tsModifiedAt;
@@ -28,22 +22,15 @@ var options = {
   }
 };
 
-const MemberTaskSchema = mongoose.Schema({
-  memberId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Member'
-  },
+const MemberTakReportSchema = mongoose.Schema({
   taskId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Task'
   },
-  projectId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Project'
-  },
+  Notes: String,
   status: Number,
   tsCreatedAt: Number,
   tsModifiedAt: Number
 
 }, options);
-module.exports = mongoose.model('MemberTask', MemberTaskSchema, 'MemberTasks');
+module.exports = mongoose.model('MemberTakReport', MemberTakReportSchema, 'MemberTakReports');
