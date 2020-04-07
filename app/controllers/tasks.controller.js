@@ -167,11 +167,13 @@ function tasksController(methods, options) {
     };
     var findCriteria = {
       _id: taskId,
-      taskCreatedBy: userId
+      taskCreatedBy: userId,
+      status: 1
     };
     var filterMemberTasks = {
       memberId: userId,
-      taskId: taskId
+      taskId: taskId,
+      status: 1
     };
     var queryProjection = {
       projectId: 1,
@@ -299,8 +301,9 @@ function tasksController(methods, options) {
       status: 0
     };
     try {
-      let deleteTask = await Task.update(filter, update, {
-        new: true
+      let deleteTask = await Task.findOneAndUpdate(filter, update, {
+        new: true,
+        useFindAndModify: false
       });
       res.send({
         success: 1,
@@ -308,7 +311,11 @@ function tasksController(methods, options) {
         message: 'Task deleted successfully'
       })
     } catch (err) {
-      console.error(err);
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
     };
 
   };
@@ -320,7 +327,7 @@ function tasksController(methods, options) {
     var taskName = req.body.taskName;
     var dueDate = req.body.dueDate;
     var description = req.body.description;
-    var projectName = req.body.projectName
+    var projectId = req.body.projectId
     var isValidId = ObjectId.isValid(taskId);
     if (!isValidId) {
       var responseObj = {
@@ -334,7 +341,7 @@ function tasksController(methods, options) {
       res.send(responseObj);
       return;
     };
-    if (!taskName && !description && !dueDate && !projectName) {
+    if (!taskName && !description && !dueDate && !projectId) {
       return res.send({
         success: 0,
         statusCode: 401,
@@ -343,29 +350,37 @@ function tasksController(methods, options) {
     };
     var update = {};
     if (taskName) {
-      update.taskName = taskName
+      update.taskName = taskName;
     };
     if (dueDate) {
-      update.dueDate = dueDate
+      update.dueDate = dueDate;
     };
     if (description) {
-      update.description = description
+      update.description = description;
     };
-    if (projectName) {
-      update.projectName = projectName
+    if (projectId) {
+      update.projectId = projectId
     };
     var filter = {
-      _id: taskId
+      _id: taskId,
+      status: 1
     };
     try {
-      var updateTask = await MemberTask.update(filter, update);
+      var updateTask = await Task.findOneAndUpdate(filter, update,{
+        new: true,
+        useFindAndModify: false
+      });
       res.send({
         success: 1,
         statusCode: 200,
         message: 'Task updated successfully'
       });
     } catch (err) {
-      console.error(err);
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
     }
   };
 }
