@@ -88,9 +88,12 @@ function projectController(methods, options) {
   // **** List Projects **** Author: Shefin S
   this.listProject = async (req, res) => {
     var userData = req.identity.data;
+    var userType = userData.type;
     var userId = userData.userId;
     var params = req.query;
     var projectId;
+    var projectData;
+    let i;
     var page = params.page || 1;
     page = page > 0 ? page : 1;
     var perPage = Number(params.perPage) || projectsConfig.resultsPerPage;
@@ -110,43 +113,69 @@ function projectController(methods, options) {
 
     };
     try {
-      let listProjects = await Project.find(filters, queryProjection, pageParams).limit(perPage);
-      let itemsCount = await Project.countDocuments(filters);
-      var totalPages = itemsCount / perPage;
-      totalPages = Math.ceil(totalPages);
-      var hasNextPage = page < totalPages;
-      let promiseArr = [];
-      // let items = [];
-      // let projectDetails = {};
-      // listProjects.forEach(async function (element) {
-      //   projectId = element._id;
-      //   let countTasks = await Task.countDocuments(filterTasks);
-      //   projectDetails.projectName = element.projectName;
-      //   projectDetails.dueDate = element.dueDate;
-      //   projectDetails.taskCount = countTasks;
-      //   console.log(projectDetails);
-      //   promiseArr.push(element);
-      //   items.push(projectDetails);
-      // })
+      if (userType == 'Admin') {
+        let listProjects = await Project.find(filters, queryProjection, pageParams).limit(perPage);
+        let itemsCount = await Project.countDocuments(filters);
+        var totalPages = itemsCount / perPage;
+        totalPages = Math.ceil(totalPages);
+        var hasNextPage = page < totalPages;
+        let promiseArr = [];
+        let items = [];
+        let projectDetails = {};
+        for (i = 0; i < listProjects.length; i++) {
+          projectId = listProjects[i]._id;
+          let countTasks = await Task.countDocuments(filterTasks);
+          projectDetails.projectName = listProjects[i].projectName;
+          projectDetails.dueDate = listProjects[i].dueDate;
+          projectDetails.taskCount = countTasks;
+          promiseArr.push(listProjects[i]);
+        };
+        items.push(projectDetails);
 
-      //now execute promise all
-      Promise.all(promiseArr)
-        .then((result) => res.send({
-          success: 1,
-          statusCode: 200,
-          items: listProjects,
-          page: page,
-          perPage: perPage,
-          hasNextPage: hasNextPage,
-          totalItems: itemsCount,
-          totalPages: totalPages,
-          message: 'Projects listed successfully'
-        }))
-        .catch((err) => res.send({
-          success: 0,
-          statusCode: 400,
-          message: err.message
-        }));
+        //now execute promise all
+        Promise.all(promiseArr)
+          .then((result) => res.send({
+            success: 1,
+            statusCode: 200,
+            items: projectDetails,
+            page: page,
+            perPage: perPage,
+            hasNextPage: hasNextPage,
+            totalItems: itemsCount,
+            totalPages: totalPages,
+            message: 'Projects listed successfully'
+          }))
+          .catch((err) => res.send({
+            success: 0,
+            statusCode: 400,
+            message: err.message
+          }));
+      } else {
+        let listProjectMember = await MemberTask.find({
+          memberId: userId
+        }).distinct('projectId');
+        let promiseArr = [];
+        for (i = 0; i < listProjectMember.length; i++) {
+          projectData = await Project.find({
+            _id: listProjectMember[i]
+          });
+          promiseArr.push(listProjectMember[i]);
+        }
+        //now execute promise all
+        Promise.all(promiseArr)
+          .then((result) =>
+            res.send({
+              success: 1,
+              statusCode: 200,
+              items: projectData,
+              message: 'Project listed successfully'
+            }))
+          .catch((err) => res.send({
+            success: 0,
+            statusCode: 400,
+            message: err.message
+          }));
+      }
     } catch (err) {
       console.error(err);
     };

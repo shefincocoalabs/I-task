@@ -81,6 +81,12 @@ function memberController(methods, options) {
         success: 1,
         statusCode: 200,
         message: 'New member added successfully'
+      }).catch(err => {
+        res.send({
+          success: 0,
+          statusCode: 500,
+          message: err.message
+        })
       })
 
     } catch (err) {
