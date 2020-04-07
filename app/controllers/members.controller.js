@@ -267,7 +267,11 @@ function memberController(methods, options) {
           message: err.message
         }));
     } catch (err) {
-      console.error(err);
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
     };
 
   };
@@ -303,27 +307,25 @@ function memberController(methods, options) {
       status: 1
     };
     var queryProjection = {
-
+      memberId: 1,
+      taskId: 1
     };
     try {
-      let memberTask = await MemberTask.find(filters, queryProjection, pageParams).populate('tasks.taskIds', Task).populate('memberId', Member);
+      let memberTask = await MemberTask.find(filters, queryProjection, pageParams).populate([{
+        path: 'taskId',
+        select: 'taskName dueDate'
+      }, {
+        path: 'memberId',
+        select: 'fullName image'
+      }])
       let itemsCount = await MemberTask.countDocuments(filters);
-      let taskArray = memberTask[0].tasks.taskIds;
-      let items = [];
-      for (let i = 0; i < taskArray.length; i++) {
-        items.push({
-          taskName: taskArray[i].taskName,
-          dueDate: taskArray[i].dueDate,
-          member: memberTask[0].memberId
-        });
-      };
       var totalPages = itemsCount / perPage;
       totalPages = Math.ceil(totalPages);
       var hasNextPage = page < totalPages;
       res.send({
         success: 1,
         statusCode: 200,
-        items: items,
+        items: memberTask,
         page: page,
         perPage: perPage,
         hasNextPage: hasNextPage,
@@ -332,7 +334,11 @@ function memberController(methods, options) {
         message: 'Member task listed successfully'
       })
     } catch (err) {
-      console.error(err);
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
     };
 
   };
