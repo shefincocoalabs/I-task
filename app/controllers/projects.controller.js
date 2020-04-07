@@ -46,22 +46,43 @@ function projectController(methods, options) {
       dueDate: dueDate,
       description: description,
       projectCreatedBy: userId,
-      members: members,
       status: 1,
       tsCreatedAt: Number(moment().unix()),
       tsModifiedAt: null
     });
-
     try {
       let saveNewProject = await newProject.save();
-      res.send({
-        success: 1,
-        statusCode: 200,
-        message: 'New project added successfully'
-      })
+      let promiseArr = [];
+      members.forEach(async function (element) {
+        element.tasks.forEach(async function (elements) {
+          const newTask = new MemberTask({
+            taskId: elements,
+            memberId: element.member,
+            projectId: saveNewProject._id,
+            dueDate: dueDate,
+            description: description,
+            status: 1,
+            tsCreatedAt: Number(moment().unix()),
+            tsModifiedAt: null
+          });
+          let saveNewTask = await newTask.save();
+          promiseArr.push(element);
+        });
+      });
+      Promise.all(promiseArr)
+        .then((result) => res.send({
+          success: 1,
+          statusCode: 200,
+          message: 'New project added successfully'
+        }))
+        .catch((err) => res.send({
+          success: 0,
+          statusCode: 400,
+          message: err.message
+        }));
     } catch (err) {
       console.error(err);
-    }
+    };
   };
 
   // **** List Projects **** Author: Shefin S
@@ -69,6 +90,7 @@ function projectController(methods, options) {
     var userData = req.identity.data;
     var userId = userData.userId;
     var params = req.query;
+    var projectId;
     var page = params.page || 1;
     page = page > 0 ? page : 1;
     var perPage = Number(params.perPage) || projectsConfig.resultsPerPage;
@@ -81,34 +103,50 @@ function projectController(methods, options) {
     var filters = {
       projectCreatedBy: userId
     };
+    var filterTasks = {
+      projectId: projectId
+    };
     var queryProjection = {
 
     };
     try {
       let listProjects = await Project.find(filters, queryProjection, pageParams).limit(perPage);
-      var items = [];
-      for (let i = 0; i < listProjects.length; i++) {
-        items.push({
-          projectName: listProjects[i].projectName,
-          dueDate: listProjects[i].dueDate,
-          totalProjectMembers: listProjects[i].members.length
-        })
-      };
       let itemsCount = await Project.countDocuments(filters);
       var totalPages = itemsCount / perPage;
       totalPages = Math.ceil(totalPages);
       var hasNextPage = page < totalPages;
-      res.send({
-        success: 1,
-        statusCode: 200,
-        items: items,
-        page: page,
-        perPage: perPage,
-        hasNextPage: hasNextPage,
-        totalItems: itemsCount,
-        totalPages: totalPages,
-        message: 'Projects listed successfully'
-      })
+      let promiseArr = [];
+      // let items = [];
+      // let projectDetails = {};
+      // listProjects.forEach(async function (element) {
+      //   projectId = element._id;
+      //   let countTasks = await Task.countDocuments(filterTasks);
+      //   projectDetails.projectName = element.projectName;
+      //   projectDetails.dueDate = element.dueDate;
+      //   projectDetails.taskCount = countTasks;
+      //   console.log(projectDetails);
+      //   promiseArr.push(element);
+      //   items.push(projectDetails);
+      // })
+
+      //now execute promise all
+      Promise.all(promiseArr)
+        .then((result) => res.send({
+          success: 1,
+          statusCode: 200,
+          items: listProjects,
+          page: page,
+          perPage: perPage,
+          hasNextPage: hasNextPage,
+          totalItems: itemsCount,
+          totalPages: totalPages,
+          message: 'Projects listed successfully'
+        }))
+        .catch((err) => res.send({
+          success: 0,
+          statusCode: 400,
+          message: err.message
+        }));
     } catch (err) {
       console.error(err);
     };
@@ -133,22 +171,31 @@ function projectController(methods, options) {
       _id: projectId,
       projectCreatedBy: userId
     };
+    var filterMembers = {
+      projectId: projectId
+    };
+    var queryProjection = {
+      taskId: 1,
+      memberId: 1
+    };
     try {
-      let projectData = await Project.findOne(filters).populate('members.member', Members);
+      let projectData = await Project.findOne(filters);
+      let projectMembers = await MemberTask.find(filterMembers, queryProjection).populate([{
+        path: 'memberId',
+        select: 'fullName inage'
+      }, {
+        path: 'taskId',
+        select: 'taskName dueDate'
+      }]);
       let projectDetails = {};
       projectDetails.projectName = projectData.projectName;
       projectDetails.dueDate = projectData.dueDate;
       projectDetails.description = projectData.description;
-      let membersArray = projectData.members;
-      var items = [];
-      for (let i = 0; i < membersArray.length; i++) {
-        items.push(membersArray[i].member)
-      };
       res.send({
         success: 1,
         statusCode: 200,
         projectDetails: projectDetails,
-        projectMembers: items,
+        projectMembers: projectMembers,
         message: 'Project details fetched successfully'
       })
     } catch (err) {

@@ -494,7 +494,7 @@ function accountsController(methods, options) {
     let checkPassword = await Members.findOne({
       _id: userId
     }).catch(err => {
-      console.error(err)
+      console.error(err);
     });
     if (checkPassword.password == currentPassword) {
       if (newPassword == confirmPassword) {
