@@ -462,10 +462,17 @@ function accountsController(methods, options) {
   this.changePasssword = async (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
+    var currentPassword = req.body.currentPassword;
     var newPassword = req.body.newPassword;
     var confirmPassword = req.body.confirmPassword;
-    if (!newPassword || !confirmPassword) {
+    if (!currentPassword || !newPassword || !confirmPassword) {
       var errors = [];
+      if (!currentPassword) {
+        errors.push({
+          field: "currentPassword",
+          message: "Current Password cannot be empty"
+        });
+      }
       if (!newPassword) {
         errors.push({
           field: "newPassword",
@@ -484,31 +491,44 @@ function accountsController(methods, options) {
         errors: errors,
       });
     };
-    if (newPassword == confirmPassword) {
-      var filter = {
-        _id: userId
-      };
-      var update = {
-        password: newPassword
-      };
-      try {
-        let passwordUpdate = await Members.findOneAndUpdate(filter, update, {
-          new: true,
-          useFindAndModify: false
-        });
+    let checkPassword = await Members.findOne({
+      _id: userId
+    }).catch(err => {
+      console.error(err)
+    });
+    if (checkPassword.password == currentPassword) {
+      if (newPassword == confirmPassword) {
+        var filter = {
+          _id: userId
+        };
+        var update = {
+          password: newPassword
+        };
+        try {
+          let passwordUpdate = await Members.findOneAndUpdate(filter, update, {
+            new: true,
+            useFindAndModify: false
+          });
+          res.send({
+            success: 1,
+            statusCode: 200,
+            message: 'Password changed successfully'
+          });
+        } catch (err) {
+          console.error(err);
+        }
+      } else {
         res.send({
-          success: 1,
-          statusCode: 200,
-          message: 'Password changed successfully'
-        });
-      } catch (err) {
-        console.error(err);
+          success: 0,
+          statusCode: 400,
+          message: 'Both new password and confirm password sholud be same'
+        })
       }
     } else {
-      res.send({
+      return res.send({
         success: 0,
         statusCode: 400,
-        message: 'Both new password and confirm password sholud be same'
+        message: 'current password is incorreect'
       })
     }
   }
