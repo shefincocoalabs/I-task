@@ -41,6 +41,12 @@ const MemberTaskSchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Project'
   },
+  dueDate: String,
+  description: String,
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
   status: Number,
   tsCreatedAt: Number,
   tsModifiedAt: Number
