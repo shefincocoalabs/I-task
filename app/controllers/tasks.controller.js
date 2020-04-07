@@ -366,7 +366,7 @@ function tasksController(methods, options) {
       status: 1
     };
     try {
-      var updateTask = await Task.findOneAndUpdate(filter, update,{
+      var updateTask = await Task.findOneAndUpdate(filter, update, {
         new: true,
         useFindAndModify: false
       });
