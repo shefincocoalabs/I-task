@@ -95,8 +95,14 @@ function tasksController(methods, options) {
       limit: perPage
     };
     var filters = {
-      taskCreatedBy: userId
+      taskCreatedBy: userId,
+      status: 1
     };
+    var queryProjection = {
+      taskName: 1,
+      description: 1
+    };
+
     var queryProjectionMemberTask = {
       taskId: 1,
       memberId: 1
@@ -135,7 +141,11 @@ function tasksController(methods, options) {
         message: 'Tasks listed successfully'
       })
     } catch (err) {
-      console.error(err);
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
     }
   };
 
