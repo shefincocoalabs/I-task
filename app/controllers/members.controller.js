@@ -110,7 +110,8 @@ function memberController(methods, options) {
       limit: perPage
     };
     var filters = {
-      createdBy: userId
+      createdBy: userId,
+      status: 1
     };
     var queryProjection = {
       fullName: 1,
@@ -161,10 +162,18 @@ function memberController(methods, options) {
       return;
     };
     var filter = {
-      _id: memberId
+      _id: memberId,
+      status: 1
+    };
+    var queryProjection = {
+      fullName: 1,
+      email: 1,
+      phone: 1,
+      image: 1,
+      position: 1
     };
     try {
-      let memberInfo = await Member.findOne(filter);
+      let memberInfo = await Member.findOne(filter, queryProjection);
       res.send({
         success: 1,
         statusCode: 200,
@@ -172,7 +181,11 @@ function memberController(methods, options) {
         message: 'Member personal-info feteched successfully'
       })
     } catch (err) {
-      console.error(err);
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
     }
   };
 
