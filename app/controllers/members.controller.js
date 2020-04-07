@@ -278,6 +278,9 @@ function memberController(methods, options) {
 
   // *** List task of a member ***  Author: Shefin S
   this.listTask = async (req, res) => {
+    var userData = req.identity.data;
+    var userId = userData.userId;
+    console.log(userId);
     var memberId = req.params.id;
     var isValidId = ObjectId.isValid(memberId);
     if (!isValidId) {
@@ -304,6 +307,7 @@ function memberController(methods, options) {
     };
     var filters = {
       memberId: memberId,
+      createdBy: userId,
       status: 1
     };
     var queryProjection = {

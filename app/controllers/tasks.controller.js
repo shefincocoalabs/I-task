@@ -8,6 +8,7 @@ function tasksController(methods, options) {
   var ObjectId = require('mongoose').Types.ObjectId;
   var tasksConfig = config.tasks;
   var moment = require('moment');
+
   //   *** Add new task *** Author: Shefin S
   this.addTask = (req, res) => {
     var userData = req.identity.data;
@@ -67,7 +68,11 @@ function tasksController(methods, options) {
         message: 'New task added successfully'
       });
     } catch (err) {
-      console.error(err);
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
     }
 
   };
