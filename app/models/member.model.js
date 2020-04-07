@@ -1,37 +1,41 @@
 const mongoose = require('mongoose');
 
 function transform(ret) {
-    ret.id = ret._id;
-    delete ret._id;
-    delete ret.status;
-    delete ret.tsCreatedAt;
-    delete ret.tsModifiedAt;
+  ret.id = ret._id;
+  delete ret._id;
+  delete ret.status;
+  delete ret.tsCreatedAt;
+  delete ret.tsModifiedAt;
 }
 var options = {
-    toObject: {
-        virtuals: true,
-        transform: function (doc, ret) {
-            transform(ret);
-        }
-    },
-    toJSON: {
-        virtuals: true,
-        transform: function (doc, ret) {
-            transform(ret);
-        }
+  toObject: {
+    virtuals: true,
+    transform: function (doc, ret) {
+      transform(ret);
     }
+  },
+  toJSON: {
+    virtuals: true,
+    transform: function (doc, ret) {
+      transform(ret);
+    }
+  }
 };
 
 const MemberSchema = mongoose.Schema({
-    fullName: String,
-    email: String,
-    image: String,
-    phone: String,
-    position: String,
-    password: String,
-    status: Number,
-    tsCreatedAt: Number,
-    tsModifiedAt: Number
+  fullName: String,
+  email: String,
+  image: String,
+  phone: String,
+  position: String,
+  password: String,
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  status: Number,
+  tsCreatedAt: Number,
+  tsModifiedAt: Number
 
-},options);
+}, options);
 module.exports = mongoose.model('Member', MemberSchema, 'Members');

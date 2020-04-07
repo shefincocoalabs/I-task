@@ -9,6 +9,8 @@ function memberController(methods, options) {
 
   //   **** Add a new member ****  Author: Shefin S
   this.addMember = async (req, res) => {
+    var userData = req.identity.data;
+    var userId = userData.userId;
     var fullName = req.body.fullName;
     var email = req.body.email;
     var phone = req.body.phone;
@@ -60,6 +62,7 @@ function memberController(methods, options) {
       position: position,
       image: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png',
       password: password,
+      createdBy: userId,
       status: 1,
       tsCreatedAt: Number(moment().unix()),
       tsModifiedAt: null
@@ -81,22 +84,21 @@ function memberController(methods, options) {
         success: 1,
         statusCode: 200,
         message: 'New member added successfully'
-      }).catch(err => {
-        res.send({
-          success: 0,
-          statusCode: 500,
-          message: err.message
-        })
       })
-
     } catch (err) {
-      console.error(err);
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
     }
   };
 
   //   **** List-members ****  Author: Shefin S
 
   this.listMember = async (req, res) => {
+    var userData = req.identity.data;
+    var userId = userData.userId;
     var params = req.query;
     var page = params.page || 1;
     page = page > 0 ? page : 1;
@@ -108,10 +110,12 @@ function memberController(methods, options) {
       limit: perPage
     };
     var filters = {
-
+      createdBy: userId
     };
     var queryProjection = {
-
+      fullName: 1,
+      image: 1,
+      position: 1
     };
     try {
       let memberList = await Member.find(filters, queryProjection, pageParams).limit(perPage);
@@ -131,7 +135,11 @@ function memberController(methods, options) {
         message: 'Members listed successfully'
       })
     } catch (err) {
-      console.error(err);
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
     };
 
   };
