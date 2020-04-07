@@ -174,7 +174,7 @@ function tasksController(methods, options) {
       taskId: taskId
     };
     var queryProjection = {
-      projectName: 1,
+      projectId: 1,
       taskName: 1,
       dueDate: 1,
       description: 1
@@ -185,7 +185,10 @@ function tasksController(methods, options) {
     };
     try {
       if (userType == 'Admin') {
-        let taskDetail = await Task.find(findCriteria, queryProjection);
+        let taskDetail = await Task.find(findCriteria, queryProjection).populate({
+          path: 'projectId',
+          select: 'projectName'
+        })
         let taskMembers = await MemberTask.find({
           tasks: taskId
         }).populate('memberId', Member)
@@ -193,7 +196,7 @@ function tasksController(methods, options) {
           success: 1,
           statusCode: 200,
           taskDetails: taskDetail,
-          taskMembers: taskMembers,
+          // taskMembers: taskMembers,
           message: 'Task detail fetched successfully'
         });
       } else {
@@ -227,7 +230,11 @@ function tasksController(methods, options) {
       }
 
     } catch (err) {
-      console.error(err);
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
     }
 
   };
