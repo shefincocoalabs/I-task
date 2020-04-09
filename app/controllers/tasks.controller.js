@@ -95,12 +95,12 @@ function tasksController(methods, options) {
       limit: perPage
     };
     var filters = {
-      taskCreatedBy: userId,
+      createdBy: userId,
       status: 1
     };
     var queryProjection = {
-      taskName: 1,
-      description: 1
+      taskId: 1,
+      memberId: 1
     };
 
     var queryProjectionMemberTask = {
@@ -112,9 +112,15 @@ function tasksController(methods, options) {
     };
     try {
       if (userType == 'Admin') {
-        taskList = await Task.find(filters, queryProjection, pageParams).limit(perPage);
-        itemsCount = await Task.countDocuments({
-          taskCreatedBy: userId
+        taskList = await MemberTask.find(filters, queryProjection, pageParams).populate([{
+          path: 'taskId',
+          select: 'taskName dueDate'
+        }, {
+          path: 'memberId',
+          select: 'fullName image'
+        }]).limit(perPage);
+        itemsCount = await MemberTask.countDocuments({
+          createdBy: userId
         });
       } else {
         taskList = await MemberTask.find(filterMemberTasks, queryProjectionMemberTask, pageParams).populate([{
@@ -167,7 +173,7 @@ function tasksController(methods, options) {
     };
     var findCriteria = {
       _id: taskId,
-      taskCreatedBy: userId,
+      createdBy: userId,
       status: 1
     };
     var filterMemberTasks = {
@@ -177,9 +183,8 @@ function tasksController(methods, options) {
     };
     var queryProjection = {
       projectId: 1,
-      taskName: 1,
-      dueDate: 1,
-      description: 1
+      taskId: 1,
+      memberId: 1
     };
     var queryProjectionMemberTask = {
       taskId: 1,
@@ -187,18 +192,24 @@ function tasksController(methods, options) {
     };
     try {
       if (userType == 'Admin') {
-        let taskDetail = await Task.find(findCriteria, queryProjection).populate({
-          path: 'projectId',
-          select: 'projectName'
-        })
-        let taskMembers = await MemberTask.find({
-          tasks: taskId
-        }).populate('memberId', Member)
+        let taskDetail = await MemberTask.findOne(findCriteria, queryProjection)
+          .populate([{
+              path: 'taskId',
+              select: 'taskName dueDate description'
+            },
+            {
+              path: 'projectId',
+              select: 'projectName'
+            },
+            {
+              path: 'memberId',
+              select: 'fullName image'
+            }
+          ])
         res.send({
           success: 1,
           statusCode: 200,
           taskDetails: taskDetail,
-          // taskMembers: taskMembers,
           message: 'Task detail fetched successfully'
         });
       } else {

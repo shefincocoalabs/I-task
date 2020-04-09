@@ -531,6 +531,34 @@ function accountsController(methods, options) {
         message: 'current password is incorreect'
       })
     }
+  };
+
+  this.fullSearch = async (req, res) => {
+    var search = req.body.searchKeyword || '.*';
+    search = search + '.*';
+    findCriteria = {
+      $or: [{
+        fullName: {
+          $regex: search,
+          $options: 'i'
+        }
+      }, {
+        email: {
+          $regex: search,
+          $options: 'i'
+        }
+      }]
+    };
+    try {
+      let searchResult = await Members.find(findCriteria);
+      res.send(searchResult);
+    } catch (err) {
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
+    }
   }
 }
 module.exports = accountsController
