@@ -1,7 +1,6 @@
 function projectController(methods, options) {
   var Project = require('../models/project.model.js');
   var Members = require('../models/member.model.js');
-  var MemberTask = require('../models/memberTask.model.js');
   var Task = require('../models/task.model.js');
   var moment = require('moment');
   var config = require('../../config/app.config.js');
@@ -15,7 +14,6 @@ function projectController(methods, options) {
     var projectName = req.body.projectName;
     var dueDate = req.body.dueDate;
     var description = req.body.description;
-    var members = req.body.members;
     if (!projectName || !dueDate || !description) {
       var errors = [];
       if (!dueDate) {
@@ -144,7 +142,7 @@ function projectController(methods, options) {
         let listProjectMemberData = await Task.find({
           memberId: userId,
           status: 1
-        }).populate({
+        }).limit(perPage).populate({
           path: 'projectId',
           select: 'projectName dueDate'
         }).lean();

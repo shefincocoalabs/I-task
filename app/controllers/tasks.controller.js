@@ -1,7 +1,6 @@
 function tasksController(methods, options) {
   var Task = require('../models/task.model.js');
   var Project = require('../models/project.model.js');
-  var MemberTask = require('../models/memberTask.model.js');
   var TaskReport = require('../models/memberTaskReport.model.js');
   var Member = require('../models/member.model.js');
   var config = require('../../config/app.config.js');
