@@ -189,98 +189,10 @@ function memberController(methods, options) {
     }
   };
 
-  // **** Add task to a member ****  Author: Shefin S
-  this.addTask = async (req, res) => {
-    var userData = req.identity.data;
-    var userId = userData.userId;
-    var tasks = req.body.tasks;
-    var dueDate = req.body.dueDate;
-    var description = req.body.description;
-    var memberId = req.body.memberId;
-    var projectId = req.body.projectId;
-    if (!tasks || !memberId || !projectId || !dueDate || !description) {
-      var errors = [];
-      if (!tasks) {
-        errors.push({
-          field: "tasks",
-          message: "Tasks cannot be empty"
-        });
-      }
-      if (!memberId) {
-        errors.push({
-          field: "memberId",
-          message: "MemberId cannot be empty"
-        });
-      }
-      if (!projectId) {
-        errors.push({
-          field: "projectId",
-          message: "ProjectId cannot be empty"
-        });
-      }
-      if (!dueDate) {
-        errors.push({
-          field: "dueDate",
-          message: "Due date cannot be empty"
-        });
-      }
-      if (!description) {
-        errors.push({
-          field: "description",
-          message: "description cannot be empty"
-        });
-      }
-      return res.send({
-        success: 0,
-        statusCode: 400,
-        errors: errors,
-      });
-    };
-    try {
-      let promiseArr = [];
-      tasks.forEach(async function (element) {
-        const newTask = new MemberTask({
-          taskId: element,
-          memberId: memberId,
-          projectId: projectId,
-          dueDate: dueDate,
-          description: description,
-          createdBy: userId,
-          status: 1,
-          tsCreatedAt: Number(moment().unix()),
-          tsModifiedAt: null
-        });
-        let saveNewTask = await newTask.save();
-        promiseArr.push(element);
-
-      })
-      //now execute promise all
-      Promise.all(promiseArr)
-        .then((result) => res.send({
-          success: 1,
-          statusCode: 200,
-          message: 'New task added successfully'
-        }))
-        .catch((err) => res.send({
-          success: 0,
-          statusCode: 400,
-          message: err.message
-        }));
-    } catch (err) {
-      res.send({
-        success: 0,
-        statusCode: 500,
-        message: err.message
-      });
-    };
-
-  };
-
   // *** List task of a member ***  Author: Shefin S
   this.listTask = async (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
-    console.log(userId);
     var memberId = req.params.id;
     var isValidId = ObjectId.isValid(memberId);
     if (!isValidId) {
@@ -307,22 +219,20 @@ function memberController(methods, options) {
     };
     var filters = {
       memberId: memberId,
-      createdBy: userId,
+      taskCreatedBy: userId,
       status: 1
     };
     var queryProjection = {
+      taskName: 1,
+      dueDate: 1,
       memberId: 1,
-      taskId: 1
     };
     try {
-      let memberTask = await MemberTask.find(filters, queryProjection, pageParams).populate([{
-        path: 'taskId',
-        select: 'taskName dueDate'
-      }, {
+      let memberTask = await Task.find(filters, queryProjection, pageParams).populate([{
         path: 'memberId',
         select: 'fullName image'
       }])
-      let itemsCount = await MemberTask.countDocuments(filters);
+      let itemsCount = await Task.countDocuments(filters);
       var totalPages = itemsCount / perPage;
       totalPages = Math.ceil(totalPages);
       var hasNextPage = page < totalPages;
@@ -348,6 +258,8 @@ function memberController(methods, options) {
   };
   //   **** Delete task for a member ****  Author: Shefin S
   this.deleteTask = async (req, res) => {
+    var userData = req.identity.data;
+    var userId = userData.userId;
     var memberId = req.params.id;
     var isValidId = ObjectId.isValid(memberId);
     if (!isValidId) {
@@ -363,13 +275,15 @@ function memberController(methods, options) {
       return;
     };
     var filter = {
-      memberId: memberId
+      memberId: memberId,
+      taskCreatedBy: userId,
+      status: 1
     };
     var update = {
       status: 0
     };
     try {
-      let deleteTask = await MemberTask.update(filter, update, {
+      let deleteTask = await Task.update(filter, update, {
         new: true
       });
       res.send({
@@ -386,6 +300,8 @@ function memberController(methods, options) {
   //   **** Update Task for member ****  Author: Shefin S
 
   this.updateTask = async (req, res) => {
+    var userData = req.identity.data;
+    var userId = userData.userId;
     var memberId = req.params.id;
     var taskName = req.body.taskName;
     var dueDate = req.body.dueDate;
@@ -421,10 +337,12 @@ function memberController(methods, options) {
       update.description = description
     };
     var filter = {
-      memberId: memberId
+      memberId: memberId,
+      taskCreatedBy: userId,
+      status: 1
     };
     try {
-      var updateTask = await MemberTask.update(filter, update);
+      var updateTask = await Task.update(filter, update);
       res.send({
         success: 1,
         statusCode: 200,

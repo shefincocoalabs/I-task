@@ -7,6 +7,7 @@ function projectController(methods, options) {
   var config = require('../../config/app.config.js');
   var ObjectId = require('mongoose').Types.ObjectId;
   var projectsConfig = config.projects;
+
   //   *** Create Project *** Author: Shefin S
   this.addProject = async (req, res) => {
     var userData = req.identity.data;
@@ -52,36 +53,17 @@ function projectController(methods, options) {
     });
     try {
       let saveNewProject = await newProject.save();
-      let promiseArr = [];
-      members.forEach(async function (element) {
-        element.tasks.forEach(async function (elements) {
-          const newTask = new MemberTask({
-            taskId: elements,
-            memberId: element.member,
-            projectId: saveNewProject._id,
-            dueDate: dueDate,
-            description: description,
-            status: 1,
-            tsCreatedAt: Number(moment().unix()),
-            tsModifiedAt: null
-          });
-          let saveNewTask = await newTask.save();
-          promiseArr.push(element);
-        });
-      });
-      Promise.all(promiseArr)
-        .then((result) => res.send({
-          success: 1,
-          statusCode: 200,
-          message: 'New project added successfully'
-        }))
-        .catch((err) => res.send({
-          success: 0,
-          statusCode: 400,
-          message: err.message
-        }));
+      res.send({
+        success: 1,
+        statusCode: 200,
+        message: 'New project added successfully'
+      })
     } catch (err) {
-      console.error(err);
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
     };
   };
 
@@ -90,6 +72,7 @@ function projectController(methods, options) {
     var userData = req.identity.data;
     var userType = userData.type;
     var userId = userData.userId;
+    console.log(userId);
     var params = req.query;
     var projectId;
     var projectData;
@@ -104,10 +87,8 @@ function projectController(methods, options) {
       limit: perPage
     };
     var filters = {
-      projectCreatedBy: userId
-    };
-    var filterTasks = {
-      projectId: projectId
+      projectCreatedBy: userId,
+      status: 1
     };
     var queryProjection = {
 
@@ -121,23 +102,32 @@ function projectController(methods, options) {
         var hasNextPage = page < totalPages;
         let promiseArr = [];
         let items = [];
-        let projectDetails = {};
         for (i = 0; i < listProjects.length; i++) {
+          var projectDetails = {};
           projectId = listProjects[i]._id;
-          let countTasks = await Task.countDocuments(filterTasks);
+          let countTasks = await Task.countDocuments({
+            projectId: projectId,
+            status: 1
+          });
+          let countMembers = await (await Task.distinct('memberId', {
+            projectId: projectId,
+            status: 1
+          })).length;
+          projectDetails.id = listProjects[i]._id;
           projectDetails.projectName = listProjects[i].projectName;
           projectDetails.dueDate = listProjects[i].dueDate;
           projectDetails.taskCount = countTasks;
+          projectDetails.membersCount = countMembers;
           promiseArr.push(listProjects[i]);
+          items.push(projectDetails);
         };
-        items.push(projectDetails);
 
         //now execute promise all
         Promise.all(promiseArr)
           .then((result) => res.send({
             success: 1,
             statusCode: 200,
-            items: projectDetails,
+            items: items,
             page: page,
             perPage: perPage,
             hasNextPage: hasNextPage,
@@ -151,23 +141,41 @@ function projectController(methods, options) {
             message: err.message
           }));
       } else {
-        let listProjectMember = await MemberTask.find({
-          memberId: userId
-        }).distinct('projectId');
+        let listProjectMemberData = await Task.find({
+          memberId: userId,
+          status: 1
+        }).populate({
+          path: 'projectId',
+          select: 'projectName dueDate'
+        }).lean();
         let promiseArr = [];
-        for (i = 0; i < listProjectMember.length; i++) {
-          projectData = await Project.find({
-            _id: listProjectMember[i]
+        let memberDetailsArray = [];
+        for (i = 0; i < listProjectMemberData.length; i++) {
+          var memberProjectDetails = {};
+          projectId = listProjectMemberData[i].projectId._id;
+          let countTasks = await Task.countDocuments({
+            projectId: projectId,
+            status: 1
           });
-          promiseArr.push(listProjectMember[i]);
-        }
+          let countMembers = await (await Task.distinct('memberId', {
+            projectId: projectId,
+            status: 1
+          })).length;
+          memberProjectDetails.id = listProjectMemberData[i].projectId._id;
+          memberProjectDetails.projectName = listProjectMemberData[i].projectId.projectName;
+          memberProjectDetails.dueDate = listProjectMemberData[i].projectId.dueDate;
+          memberProjectDetails.taskCount = countTasks;
+          memberProjectDetails.membersCount = countMembers;
+          promiseArr.push(listProjectMemberData[i]);
+          memberDetailsArray.push(memberProjectDetails);
+        };
         //now execute promise all
         Promise.all(promiseArr)
           .then((result) =>
             res.send({
               success: 1,
               statusCode: 200,
-              items: projectData,
+              items: memberDetailsArray,
               message: 'Project listed successfully'
             }))
           .catch((err) => res.send({
@@ -177,13 +185,18 @@ function projectController(methods, options) {
           }));
       }
     } catch (err) {
-      console.error(err);
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
     };
   };
 
   //   **** Get project detail **** Author: Shefin S
   this.getProjectDetail = async (req, res) => {
     var userData = req.identity.data;
+    var userType = userData.type;
     var userId = userData.userId;
     var projectId = req.params.id;
     var isValidId = ObjectId.isValid(projectId);
@@ -196,39 +209,45 @@ function projectController(methods, options) {
       res.send(responseObj);
       return;
     };
-    var filters = {
+    var filter = {
       _id: projectId,
-      projectCreatedBy: userId
-    };
-    var filterMembers = {
-      projectId: projectId
+      status: 1
     };
     var queryProjection = {
-      taskId: 1,
-      memberId: 1
+      projectName: 1,
+      dueDate: 1,
+      description: 1,
     };
+    var taskQueryProjection = {
+      taskName: 1,
+      dueDate: 1
+    }
     try {
-      let projectData = await Project.findOne(filters);
-      let projectMembers = await MemberTask.find(filterMembers, queryProjection).populate([{
+      let projectData = await Project.findOne(filter, queryProjection);
+      let projectId = projectData._id;
+      let projectMembers = await Task.find({
+        projectId: projectId,
+        status: 1
+      }, taskQueryProjection).populate({
         path: 'memberId',
-        select: 'fullName inage'
-      }, {
-        path: 'taskId',
-        select: 'taskName dueDate'
-      }]);
+        select: 'fullName image'
+      })
       let projectDetails = {};
       projectDetails.projectName = projectData.projectName;
       projectDetails.dueDate = projectData.dueDate;
-      projectDetails.description = projectData.description;
+      projectDetails.membersTask = projectMembers;
       res.send({
         success: 1,
         statusCode: 200,
         projectDetails: projectDetails,
-        projectMembers: projectMembers,
         message: 'Project details fetched successfully'
       })
     } catch (err) {
-      console.error(err);
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
     }
 
   };

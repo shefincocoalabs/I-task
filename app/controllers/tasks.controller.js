@@ -15,6 +15,7 @@ function tasksController(methods, options) {
     var userId = userData.userId;
     var taskName = req.body.taskName;
     var projectId = req.body.projectId;
+    var memberId = req.body.memberId
     var dueDate = req.body.dueDate;
     var description = req.body.description;
     if (!taskName || !projectId || !dueDate || !description) {
@@ -51,6 +52,7 @@ function tasksController(methods, options) {
     };
     const newTask = new Task({
       projectId: projectId,
+      memberId: memberId ? memberId : null,
       taskName: taskName,
       dueDate: dueDate,
       description: description,
@@ -95,16 +97,18 @@ function tasksController(methods, options) {
       limit: perPage
     };
     var filters = {
-      createdBy: userId,
+      taskCreatedBy: userId,
       status: 1
     };
     var queryProjection = {
-      taskId: 1,
+      taskName: 1,
+      dueDate: 1,
       memberId: 1
     };
 
     var queryProjectionMemberTask = {
-      taskId: 1,
+      taskName: 1,
+      dueDate: 1,
       memberId: 1
     };
     var filterMemberTasks = {
@@ -112,25 +116,17 @@ function tasksController(methods, options) {
     };
     try {
       if (userType == 'Admin') {
-        taskList = await MemberTask.find(filters, queryProjection, pageParams).populate([{
-          path: 'taskId',
-          select: 'taskName dueDate'
-        }, {
+        taskList = await Task.find(filters, queryProjection, pageParams).populate([{
           path: 'memberId',
           select: 'fullName image'
         }]).limit(perPage);
-        itemsCount = await MemberTask.countDocuments({
-          createdBy: userId
-        });
+        itemsCount = await Task.countDocuments(filters);
       } else {
-        taskList = await MemberTask.find(filterMemberTasks, queryProjectionMemberTask, pageParams).populate([{
-          path: 'taskId',
-          select: 'taskName dueDate'
-        }, {
+        taskList = await Task.find(filterMemberTasks, queryProjectionMemberTask, pageParams).populate([{
           path: 'memberId',
           select: 'fullName image'
         }]).limit(perPage);
-        itemsCount = await MemberTask.countDocuments(filterMemberTasks);
+        itemsCount = await Task.countDocuments(filterMemberTasks);
       }
       var totalPages = itemsCount / perPage;
       totalPages = Math.ceil(totalPages);
@@ -155,6 +151,66 @@ function tasksController(methods, options) {
     }
   };
 
+  this.listUnassignedTasks = async (req, res) => {
+    var userData = req.identity.data;
+    var userId = userData.userId;
+    var params = req.query;
+    var page = params.page || 1;
+    page = page > 0 ? page : 1;
+    var perPage = Number(params.perPage) || tasksConfig.resultsPerPage;
+    perPage = perPage > 0 ? perPage : tasksConfig.resultsPerPage;
+    var offset = (page - 1) * perPage;
+    var pageParams = {
+      skip: offset,
+      limit: perPage
+    };
+    var filter = {
+      taskCreatedBy: userId,
+      memberId: null,
+      status: 1
+    };
+    var queryProjection = {
+      projectId: 1,
+      taskName: 1,
+      dueDate: 1
+    };
+
+    try {
+      let listUnassignedTasks = await Task.find(filter, queryProjection, pageParams).populate({
+        path: 'projectId',
+        select: 'projectName'
+      });
+      let itemsCount = await Task.countDocuments(filter);
+      var totalPages = itemsCount / perPage;
+      totalPages = Math.ceil(totalPages);
+      var hasNextPage = page < totalPages;
+      if (listUnassignedTasks.length == 0) {
+        return res.send({
+          success: 0,
+          statusCode: 500,
+          message: 'All existing tasks are assigned, please add a new task'
+        });
+      }
+      res.send({
+        success: 1,
+        statusCode: 200,
+        items: listUnassignedTasks,
+        page: page,
+        perPage: perPage,
+        hasNextPage: hasNextPage,
+        totalItems: itemsCount,
+        totalPages: totalPages,
+        message: 'All unassigned tasks listed successfully'
+      })
+    } catch (err) {
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
+    }
+  }
+
   // *** Get task details ***  Author: Shefin S
   this.detailTask = async (req, res) => {
     var userData = req.identity.data;
@@ -173,31 +229,24 @@ function tasksController(methods, options) {
     };
     var findCriteria = {
       _id: taskId,
-      createdBy: userId,
+      taskCreatedBy: userId,
       status: 1
     };
     var filterMemberTasks = {
       memberId: userId,
-      taskId: taskId,
       status: 1
     };
     var queryProjection = {
+      taskName: 1,
+      dueDate: 1,
+      description: 1,
       projectId: 1,
-      taskId: 1,
       memberId: 1
-    };
-    var queryProjectionMemberTask = {
-      taskId: 1,
-      projectId: 1
     };
     try {
       if (userType == 'Admin') {
-        let taskDetail = await MemberTask.findOne(findCriteria, queryProjection)
+        let taskDetail = await Task.findOne(findCriteria, queryProjection)
           .populate([{
-              path: 'taskId',
-              select: 'taskName dueDate description'
-            },
-            {
               path: 'projectId',
               select: 'projectName'
             },
@@ -213,32 +262,16 @@ function tasksController(methods, options) {
           message: 'Task detail fetched successfully'
         });
       } else {
-        let memberTaskDetail = await MemberTask.findOne(filterMemberTasks, queryProjectionMemberTask).populate([{
-          path: 'taskId',
-          select: 'taskName dueDate description'
-        }, {
+        let memberTaskDetail = await Task.findOne(filterMemberTasks, queryProjection).populate([{
           path: 'projectId',
           select: 'projectName'
         }]);
-        if (memberTaskDetail.length == 0) {
-          return res.send({
-            success: 0,
-            statusCode: 400,
-            message: 'Task details not found'
-          });
-        } else {
-          // let taskDetail = {};
-          // taskDetail.taskName = memberTaskDetail.taskDetail.task.taskName;
-          // taskDetail.dueDate = memberTaskDetail.taskDetail.task.dueDate;
-          // taskDetail.description = memberTaskDetail.taskDetail.task.description;
-          // taskDetail.projectName = memberTaskDetail.taskDetail.project.projectName;
-          res.send({
-            success: 1,
-            statusCode: 200,
-            taskDetail: memberTaskDetail,
-            message: 'Task detail fetched successfully'
-          });
-        }
+        res.send({
+          success: 1,
+          statusCode: 200,
+          taskDetail: memberTaskDetail,
+          message: 'Task detail fetched successfully'
+        });
 
       }
 
@@ -370,8 +403,11 @@ function tasksController(methods, options) {
       update.description = description;
     };
     if (projectId) {
-      update.projectId = projectId
+      update.projectId = projectId;
     };
+    if (memberId) {
+      update.memberId = memberId;
+    }
     var filter = {
       _id: taskId,
       status: 1
