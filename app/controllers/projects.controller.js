@@ -197,6 +197,7 @@ function projectController(methods, options) {
     var userType = userData.type;
     var userId = userData.userId;
     var projectId = req.params.id;
+    var projectMembersData;
     var isValidId = ObjectId.isValid(projectId);
     if (!isValidId) {
       var responseObj = {
@@ -223,17 +224,33 @@ function projectController(methods, options) {
     try {
       let projectData = await Project.findOne(filter, queryProjection);
       let projectId = projectData._id;
+      let projectMembersTasks = await Task.find({
+        projectId: projectId,
+        status: 1
+      }, taskQueryProjection).populate({
+        path: 'memberId',
+        select: 'fullName image'
+      });
       let projectMembers = await Task.find({
         projectId: projectId,
         status: 1
       }, taskQueryProjection).populate({
         path: 'memberId',
         select: 'fullName image'
-      })
+      }).lean();
+      let items = [];
+      for (let i = 0; i < projectMembers.length; i++) {
+        var projectMembersData = {};
+        projectMembersData.id = projectMembers[i].memberId._id;
+        projectMembersData.memberName = projectMembers[i].memberId.fullName;
+        projectMembersData.image = projectMembers[i].memberId.image;
+        items.push(projectMembersData);
+      };
       let projectDetails = {};
       projectDetails.projectName = projectData.projectName;
       projectDetails.dueDate = projectData.dueDate;
-      projectDetails.membersTask = projectMembers;
+      projectDetails.members = items;
+      projectDetails.membersTask = projectMembersTasks;
       res.send({
         success: 1,
         statusCode: 200,
