@@ -550,7 +550,13 @@ function accountsController(methods, options) {
     var findCriteriaMembers;
     var searchResult;
     search = search + '.*';
-
+    if(!type) {
+      return res.send({
+        success: 0,
+        statusCode: 400,
+        message: 'Type cannot be empty'
+      })
+    };
     if (userType == 'Admin') {
       findCriteriaTasks = {
         $or: [{
