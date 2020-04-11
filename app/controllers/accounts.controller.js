@@ -1,6 +1,8 @@
 function accountsController(methods, options) {
   var Users = require('../models/user.model.js');
   var Members = require('../models/member.model.js');
+  var Task = require('../models/task.model.js');
+  var Project = require('../models/project.model.js');
   var Otp = require('../models/otp.model.js');
   var config = require('../../config/app.config.js');
   var otpConfig = config.otp;
@@ -459,6 +461,8 @@ function accountsController(methods, options) {
     })
   };
 
+  // *** Change Password ****  Author: Shefin S
+
   this.changePasssword = async (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
@@ -533,25 +537,117 @@ function accountsController(methods, options) {
     }
   };
 
+  // *** Search using keyword ***  Author: Shefin S
+
   this.fullSearch = async (req, res) => {
-    var search = req.body.searchKeyword || '.*';
+    var userData = req.identity.data;
+    var userType = userData.type;
+    var userId = userData.userId;
+    var type = req.query.type;
+    var search = req.query.searchKeyword || '.*';
+    var findCriteriaTasks;
+    var findCriteriaProject;
+    var findCriteriaMembers;
+    var searchResult;
     search = search + '.*';
-    findCriteria = {
-      $or: [{
-        fullName: {
-          $regex: search,
-          $options: 'i'
-        }
-      }, {
-        email: {
-          $regex: search,
-          $options: 'i'
-        }
-      }]
-    };
+
+    if (userType == 'Admin') {
+      findCriteriaTasks = {
+        $or: [{
+          taskName: {
+            $regex: search,
+            $options: 'i'
+          }
+        }, {
+          dueDate: {
+            $regex: search,
+            $options: 'i'
+          }
+        }],
+        taskCreatedBy: userId,
+        status: 1
+      };
+      findCriteriaProject = {
+        $or: [{
+          projectName: {
+            $regex: search,
+            $options: 'i'
+          }
+        }, {
+          dueDate: {
+            $regex: search,
+            $options: 'i'
+          }
+        }],
+        projectCreatedBy: userId,
+        status: 1
+      };
+      findCriteriaMembers = {
+        $or: [{
+          fullName: {
+            $regex: search,
+            $options: 'i',
+          }
+        }, {
+          email: {
+            $regex: search,
+            $options: 'i'
+          }
+        }],
+        createdBy: userId,
+        status: 1
+      };
+    } else {
+      findCriteriaTasks = {
+        $or: [{
+          taskName: {
+            $regex: search,
+            $options: 'i'
+          }
+        }, {
+          dueDate: {
+            $regex: search,
+            $options: 'i'
+          }
+        }],
+        memberId: userId,
+        status: 1
+      };
+    }
+
     try {
-      let searchResult = await Members.find(findCriteria);
-      res.send(searchResult);
+      if (type == 'Members') {
+        searchResult = await Members.find(findCriteriaMembers, {
+          fullName: 1,
+          image: 1,
+          position: 1
+        });
+      } else if (type == 'Tasks') {
+        searchResult = await Task.find(findCriteriaTasks, {
+            taskName: 1,
+            dueDate: 1
+          })
+          .populate([{
+              path: 'memberId',
+              select: 'fullName image'
+            },
+            {
+              path: 'projectId',
+              select: 'projectName dueDate'
+            }
+          ]);
+      } else {
+        searchResult = await Project.find(findCriteriaProject, {
+          projectName: 1,
+          dueDate: 1
+        })
+      }
+      res.send({
+        success: 1,
+        statusCode: 200,
+        items: searchResult,
+        message: 'Search results listed successfully'
+      })
     } catch (err) {
       res.send({
         success: 0,
@@ -559,6 +655,6 @@ function accountsController(methods, options) {
         message: err.message
       });
     }
-  }
+  };
 }
 module.exports = accountsController
