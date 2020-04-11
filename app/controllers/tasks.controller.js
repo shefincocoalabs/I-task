@@ -102,13 +102,15 @@ function tasksController(methods, options) {
     var queryProjection = {
       taskName: 1,
       dueDate: 1,
-      memberId: 1
+      memberId: 1,
+      projectId: 1
     };
 
     var queryProjectionMemberTask = {
       taskName: 1,
       dueDate: 1,
-      memberId: 1
+      memberId: 1,
+      projectId: 1
     };
     var filterMemberTasks = {
       memberId: userId
@@ -118,12 +120,18 @@ function tasksController(methods, options) {
         taskList = await Task.find(filters, queryProjection, pageParams).populate([{
           path: 'memberId',
           select: 'fullName image'
+        }, {
+          path: 'projectId',
+          select: 'projectName dueDate'
         }]).limit(perPage);
         itemsCount = await Task.countDocuments(filters);
       } else {
         taskList = await Task.find(filterMemberTasks, queryProjectionMemberTask, pageParams).populate([{
           path: 'memberId',
           select: 'fullName image'
+        }, {
+          path: 'projectId',
+          select: 'projectName dueDate'
         }]).limit(perPage);
         itemsCount = await Task.countDocuments(filterMemberTasks);
       }
