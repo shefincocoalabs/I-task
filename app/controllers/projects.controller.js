@@ -70,10 +70,8 @@ function projectController(methods, options) {
     var userData = req.identity.data;
     var userType = userData.type;
     var userId = userData.userId;
-    console.log(userId);
     var params = req.query;
     var projectId;
-    var projectData;
     let i;
     var page = params.page || 1;
     page = page > 0 ? page : 1;
