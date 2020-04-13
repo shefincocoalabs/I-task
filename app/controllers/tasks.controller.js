@@ -56,6 +56,7 @@ function tasksController(methods, options) {
       dueDate: dueDate,
       description: description,
       taskCreatedBy: userId,
+      isCompleted: false,
       status: 1,
       tsCreatedAt: Number(moment().unix()),
       tsModifiedAt: null
@@ -103,14 +104,16 @@ function tasksController(methods, options) {
       taskName: 1,
       dueDate: 1,
       memberId: 1,
-      projectId: 1
+      projectId: 1,
+      isCompleted: 1
     };
 
     var queryProjectionMemberTask = {
       taskName: 1,
       dueDate: 1,
       memberId: 1,
-      projectId: 1
+      projectId: 1,
+      isCompleted: 1
     };
     var filterMemberTasks = {
       memberId: userId
@@ -317,8 +320,19 @@ function tasksController(methods, options) {
       tsCreatedAt: Number(moment().unix()),
       tsModifiedAt: null
     });
+    var filter = {
+      _id: taskId,
+      status: 1
+    };
+    var update = {
+      isCompleted: true
+    }
     try {
       let saveNewTaskReport = await newTaskReport.save();
+      let updateTask = await Task.findOneAndUpdate(filter, update, {
+        new: true,
+        useFindAndModify: false
+      });
       res.send({
         success: 1,
         statusCode: 200,

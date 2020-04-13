@@ -569,6 +569,7 @@ function accountsController(methods, options) {
         message: 'Type cannot be empty'
       })
     };
+
     if (userType == 'Admin') {
       findCriteriaTasks = {
         $or: [{
