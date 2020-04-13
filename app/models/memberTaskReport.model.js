@@ -22,7 +22,7 @@ var options = {
   }
 };
 
-const MemberTakReportSchema = mongoose.Schema({
+const MemberTaskReportSchema = mongoose.Schema({
   taskId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Task'
@@ -37,4 +37,4 @@ const MemberTakReportSchema = mongoose.Schema({
   tsModifiedAt: Number
 
 }, options);
-module.exports = mongoose.model('MemberTakReport', MemberTakReportSchema, 'MemberTakReports');
+module.exports = mongoose.model('MemberTaskReport', MemberTaskReportSchema, 'MemberTaskReports');

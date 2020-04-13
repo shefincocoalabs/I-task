@@ -339,7 +339,11 @@ function tasksController(methods, options) {
         message: 'Task completed successfully'
       });
     } catch (err) {
-      console.error(err);
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
     }
   };
 
