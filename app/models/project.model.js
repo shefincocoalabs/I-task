@@ -23,6 +23,7 @@ var options = {
 };
 
 const ProjectSchema = mongoose.Schema({
+  projectCode: String,
   projectName: String,
   dueDate: String,
   description: String,

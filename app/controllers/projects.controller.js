@@ -14,6 +14,7 @@ function projectController(methods, options) {
     var projectName = req.body.projectName;
     var dueDate = req.body.dueDate;
     var description = req.body.description;
+    var projectCode;
     if (!projectName || !dueDate || !description) {
       var errors = [];
       if (!dueDate) {
@@ -40,20 +41,30 @@ function projectController(methods, options) {
         errors: errors,
       });
     };
-    const newProject = new Project({
-      projectName: projectName,
-      dueDate: dueDate,
-      description: description,
-      projectCreatedBy: userId,
-      status: 1,
-      tsCreatedAt: Number(moment().unix()),
-      tsModifiedAt: null
-    });
     try {
+      let projectsCount = await Project.countDocuments({
+        projectCreatedBy: userId
+      });
+      if (projectsCount < 10) {
+        projectCode = 'PO' + projectsCount;
+      } else {
+        projectCode = 'P' + projectsCount;
+      }
+      const newProject = new Project({
+        projectCode: projectCode,
+        projectName: projectName,
+        dueDate: dueDate,
+        description: description,
+        projectCreatedBy: userId,
+        status: 1,
+        tsCreatedAt: Number(moment().unix()),
+        tsModifiedAt: null
+      });
       let saveNewProject = await newProject.save();
       res.send({
         success: 1,
         statusCode: 200,
+        projectId: saveNewProject._id,
         message: 'New project added successfully'
       })
     } catch (err) {
