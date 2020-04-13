@@ -31,6 +31,7 @@ const ProjectSchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
+  isArchieved: Boolean,
   status: Number,
   tsCreatedAt: Number,
   tsModifiedAt: Number

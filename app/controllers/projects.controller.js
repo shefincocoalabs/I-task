@@ -56,6 +56,7 @@ function projectController(methods, options) {
         dueDate: dueDate,
         description: description,
         projectCreatedBy: userId,
+        isArchieved: false,
         status: 1,
         tsCreatedAt: Number(moment().unix()),
         tsModifiedAt: null
@@ -123,6 +124,7 @@ function projectController(methods, options) {
           projectDetails.id = listProjects[i]._id;
           projectDetails.projectName = listProjects[i].projectName;
           projectDetails.dueDate = listProjects[i].dueDate;
+          projectDetails.isArchieved = listProjects[i].isArchieved;
           projectDetails.taskCount = countTasks;
           projectDetails.membersCount = countMembers;
           promiseArr.push(listProjects[i]);
@@ -275,5 +277,47 @@ function projectController(methods, options) {
     }
 
   };
+
+// *** Api for archieving a project ****  Author: Shefin S
+
+  this.archieveProject = async(req,res) => {
+    var userData = req.identity.data;
+    var userType = userData.type;
+    var userId = userData.userId;
+    var projectId = req.params.id;
+    var isValidId = ObjectId.isValid(projectId);
+    if (!isValidId) {
+      var responseObj = {
+        success: 0,
+        status: 401,
+        message: 'Id is invalid'
+      }
+      res.send(responseObj);
+      return;
+    };
+    var filter = {
+      _id: projectId
+    };
+    var update = {
+      isArchieved: true
+    };
+    try {
+     let updateProjectData = await Project.findOneAndUpdate(filter, update, {
+      new: true,
+      useFindAndModify: false
+    });
+    res.send({
+      success: 1,
+      statusCode: 200,
+      message: 'Project archieved successfully'
+    })
+    }catch(err) {
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
+    }
+  }
 }
 module.exports = projectController
