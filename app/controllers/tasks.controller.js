@@ -455,5 +455,66 @@ function tasksController(methods, options) {
       });
     }
   };
+
+  this.transferTask = async(req, res) => {
+    var taskId = req.params.id;
+    var memberId = req.body.memberId;
+    var isValidId = ObjectId.isValid(taskId);
+    if (!isValidId) {
+      var responseObj = {
+        success: 0,
+        status: 401,
+        errors: [{
+          field: "id",
+          message: "id is invalid"
+        }]
+      }
+      res.send(responseObj);
+      return;
+    };
+    if(!memberId) {
+      return res.send({
+        success: 0,
+        statusCode: 200,
+        message: 'memberId cannot be empty'
+      })
+    };
+    var filter = {
+      _id: taskId,
+      status: 1
+    };
+    var update = {
+      memberId: memberId
+    };
+    try {
+      let findMember = await Task.findOne({
+        _id: taskId,
+        status: 1
+      });
+      let taskMember = findMember.memberId;
+      if (taskMember == memberId) {
+        return res.send({
+          success: 0,
+          statusCode: 400,
+          message: 'This task is already assigned to this member, please select another member'
+        });
+      };
+      let updateMember = await Task.findOneAndUpdate(filter, update, {
+        new: true,
+        useFindAndModify: false
+      });
+      res.send({
+        success: 1,
+        statusCode: 200,
+        message: 'Task transfered successfully'
+      })
+    } catch (err) {
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
+    }
+  }
 }
 module.exports = tasksController

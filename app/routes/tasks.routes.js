@@ -7,5 +7,6 @@ module.exports = (app,methods,options) => {
     tasks.methods.post('/submit-report/:id',tasks.submitTaskReport, {auth:true});
     tasks.methods.delete('/delete/:id',tasks.deleteTask, {auth:true});
     tasks.methods.patch('/update/:id',tasks.updateTask, {auth:true});
+    tasks.methods.patch('/transfer/:id',tasks.transferTask, {auth:true});
     
 }

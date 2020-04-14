@@ -258,8 +258,10 @@ function projectController(methods, options) {
         items.push(projectMembersData);
       };
       let projectDetails = {};
+      projectDetails.id = projectData._id;
       projectDetails.projectName = projectData.projectName;
       projectDetails.dueDate = projectData.dueDate;
+      projectDetails.description = projectData.description;
       projectDetails.members = items;
       projectDetails.membersTask = projectMembersTasks;
       res.send({
@@ -312,6 +314,64 @@ function projectController(methods, options) {
       message: 'Project archieved successfully'
     })
     }catch(err) {
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
+    }
+  };
+
+  this.editProject = async(req,res) => {
+    var projectId = req.params.id;
+    var projectName = req.body.taskName;
+    var dueDate = req.body.dueDate;
+    var description = req.body.description;
+    var isValidId = ObjectId.isValid(projectId);
+    if (!isValidId) {
+      var responseObj = {
+        success: 0,
+        status: 401,
+        errors: [{
+          field: "id",
+          message: "id is invalid"
+        }]
+      }
+      res.send(responseObj);
+      return;
+    };
+    if (!projectName && !description && !dueDate) {
+      return res.send({
+        success: 0,
+        statusCode: 401,
+        message: 'Nothing to update'
+      })
+    };
+    var update = {};
+    if (projectName) {
+      update.projectName = projectName;
+    };
+    if (dueDate) {
+      update.dueDate = dueDate;
+    };
+    if (description) {
+      update.description = description;
+    };
+    var filter = {
+      _id: projectId,
+      status: 1
+    };
+    try {
+      var updateProject = await Project.findOneAndUpdate(filter, update, {
+        new: true,
+        useFindAndModify: false
+      });
+      res.send({
+        success: 1,
+        statusCode: 200,
+        message: 'Project updated successfully'
+      });
+    } catch (err) {
       res.send({
         success: 0,
         statusCode: 500,

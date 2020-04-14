@@ -5,5 +5,6 @@ module.exports = (app,methods,options) => {
     projects.methods.get('/list',projects.listProject, {auth:true});
     projects.methods.get('/detail/:id',projects.getProjectDetail, {auth:true});
     projects.methods.post('/archieve/:id',projects.archieveProject, {auth:true});
+    projects.methods.patch('/edit/:id',projects.editProject, {auth:true});
     
 }
