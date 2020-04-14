@@ -263,7 +263,7 @@ function tasksController(methods, options) {
             },
             {
               path: 'memberId',
-              select: 'fullName image'
+              select: 'fullName image position'
             }
           ])
         res.send({

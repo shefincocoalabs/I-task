@@ -240,14 +240,14 @@ function projectController(methods, options) {
         status: 1
       }, taskQueryProjection).populate({
         path: 'memberId',
-        select: 'fullName image'
+        select: 'fullName image position'
       });
       let projectMembers = await Task.find({
         projectId: projectId,
         status: 1
       }, taskQueryProjection).populate({
         path: 'memberId',
-        select: 'fullName image'
+        select: 'fullName image position'
       }).lean();
       let items = [];
       for (let i = 0; i < projectMembers.length; i++) {
@@ -255,6 +255,7 @@ function projectController(methods, options) {
         projectMembersData.id = projectMembers[i].memberId._id;
         projectMembersData.memberName = projectMembers[i].memberId.fullName;
         projectMembersData.image = projectMembers[i].memberId.image;
+        projectMembersData.position = projectMembers[i].memberId.position;
         items.push(projectMembersData);
       };
       let projectDetails = {};
