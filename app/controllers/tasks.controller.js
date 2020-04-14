@@ -250,6 +250,7 @@ function tasksController(methods, options) {
       taskName: 1,
       dueDate: 1,
       description: 1,
+      isCompleted: 1,
       projectId: 1,
       memberId: 1
     };
@@ -456,7 +457,7 @@ function tasksController(methods, options) {
     }
   };
 
-  this.transferTask = async(req, res) => {
+  this.transferTask = async (req, res) => {
     var taskId = req.params.id;
     var memberId = req.body.memberId;
     var isValidId = ObjectId.isValid(taskId);
@@ -472,7 +473,7 @@ function tasksController(methods, options) {
       res.send(responseObj);
       return;
     };
-    if(!memberId) {
+    if (!memberId) {
       return res.send({
         success: 0,
         statusCode: 200,
