@@ -123,6 +123,7 @@ function projectController(methods, options) {
           })).length;
           projectDetails.id = listProjects[i]._id;
           projectDetails.projectName = listProjects[i].projectName;
+          projectDetails.projectCode = listProjects[i].projectCode;
           projectDetails.dueDate = listProjects[i].dueDate;
           projectDetails.isArchieved = listProjects[i].isArchieved;
           projectDetails.taskCount = countTasks;
@@ -172,6 +173,7 @@ function projectController(methods, options) {
           })).length;
           memberProjectDetails.id = listProjectMemberData[i].projectId._id;
           memberProjectDetails.projectName = listProjectMemberData[i].projectId.projectName;
+          memberProjectDetails.projectCode = listProjectMemberData[i].projectId.projectCode;
           memberProjectDetails.dueDate = listProjectMemberData[i].projectId.dueDate;
           memberProjectDetails.taskCount = countTasks;
           memberProjectDetails.membersCount = countMembers;
