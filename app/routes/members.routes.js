@@ -6,4 +6,5 @@ module.exports = (app,methods,options) => {
     member.methods.get('/list-task/:id',member.listTask, {auth:true});
     member.methods.patch('/update-task/:id',member.updateTask, {auth:true});
     member.methods.delete('/delete-task/:id',member.deleteTask, {auth:true});
+    member.methods.get('/list-positions',member.listPositions, {auth:true});
 }

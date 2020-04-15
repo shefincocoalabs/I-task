@@ -1,3 +1,5 @@
+var gateway = require('../components/gateway.component.js');
+
 function accountsController(methods, options) {
   var Users = require('../models/user.model.js');
   var Members = require('../models/member.model.js');
@@ -541,6 +543,7 @@ function accountsController(methods, options) {
   // *** Search using keyword ***  Author: Shefin S
 
   this.fullSearch = async (req, res) => {
+    var bearer = req.headers['authorization'];
     var userData = req.identity.data;
     var userType = userData.type;
     var userId = userData.userId;
@@ -587,17 +590,10 @@ function accountsController(methods, options) {
         status: 1
       };
       findCriteriaProject = {
-        $or: [{
-          projectName: {
-            $regex: search,
-            $options: 'i'
-          }
-        }, {
-          dueDate: {
-            $regex: search,
-            $options: 'i'
-          }
-        }],
+        projectName: {
+          $regex: search,
+          $options: 'i'
+        },
         projectCreatedBy: userId,
         status: 1
       };
@@ -635,49 +631,61 @@ function accountsController(methods, options) {
     }
 
     try {
-      if (type == 'Members') {
-        searchResult = await Members.find(findCriteriaMembers, {
-          fullName: 1,
-          image: 1,
-          position: 1
-        }, pageParams);
-        itemsCount = await Members.countDocuments(findCriteriaMembers);
-      } else if (type == 'Tasks') {
-        searchResult = await Task.find(findCriteriaTasks, {
-            taskName: 1,
-            dueDate: 1
-          }, pageParams)
-          .populate([{
-              path: 'memberId',
-              select: 'fullName image'
-            },
-            {
-              path: 'projectId',
-              select: 'projectName dueDate'
-            }
-          ]);
-        itemsCount = await Task.countDocuments(findCriteriaTasks);
+      if (type == 'Members' || type == 'Tasks') {
+        if (type == 'Members') {
+          searchResult = await Members.find(findCriteriaMembers, {
+            fullName: 1,
+            image: 1,
+            position: 1
+          }, pageParams);
+          itemsCount = await Members.countDocuments(findCriteriaMembers);
+        } else if (type == 'Tasks') {
+          searchResult = await Task.find(findCriteriaTasks, {
+              taskName: 1,
+              dueDate: 1
+            }, pageParams)
+            .populate([{
+                path: 'memberId',
+                select: 'fullName image'
+              },
+              {
+                path: 'projectId',
+                select: 'projectName dueDate'
+              }
+            ]);
+          itemsCount = await Task.countDocuments(findCriteriaTasks);
+        }
+        var totalPages = itemsCount / perPage;
+        totalPages = Math.ceil(totalPages);
+        var hasNextPage = page < totalPages;
+        res.send({
+          success: 1,
+          statusCode: 200,
+          items: searchResult,
+          page: page,
+          perPage: perPage,
+          hasNextPage: hasNextPage,
+          totalItems: itemsCount,
+          totalPages: totalPages,
+          message: 'Search results listed successfully'
+        })
       } else {
-        searchResult = await Project.find(findCriteriaProject, {
-          projectName: 1,
-          dueDate: 1
-        }, pageParams)
-        itemsCount = await Project.countDocuments(findCriteriaProject);
+        let prokectListReqObj = {
+          findCriteriaProject,
+          bearer,
+          url: '/projects/list',
+        };
+        getProjectList(prokectListReqObj, function (err, result) {
+          var searchedProj = {
+            items: []
+          };
+          if (!err) {
+            searchedProj = JSON.parse(result);
+            res.send(searchedProj);
+          }
+        })
       }
-      var totalPages = itemsCount / perPage;
-      totalPages = Math.ceil(totalPages);
-      var hasNextPage = page < totalPages;
-      res.send({
-        success: 1,
-        statusCode: 200,
-        items: searchResult,
-        page: page,
-        perPage: perPage,
-        hasNextPage: hasNextPage,
-        totalItems: itemsCount,
-        totalPages: totalPages,
-        message: 'Search results listed successfully'
-      })
+
     } catch (err) {
       res.send({
         success: 0,
@@ -687,4 +695,19 @@ function accountsController(methods, options) {
     }
   };
 }
+
+function getProjectList(reqObj, callback) {
+  let bearer = reqObj.bearer;
+  let url = reqObj.url;
+  delete reqObj.bearer;
+  delete reqObj.url;
+  gateway.getWithAuth(url, reqObj, bearer, function (err, result) {
+    if (err) {
+      console.log("Error while project list..." + url);
+
+    }
+    callback(err, result);
+  });
+
+};
 module.exports = accountsController

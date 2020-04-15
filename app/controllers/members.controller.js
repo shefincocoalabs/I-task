@@ -351,5 +351,27 @@ function memberController(methods, options) {
       console.error(err);
     }
   };
+
+  this.listPositions = (req,res) => {
+    var position = [];
+    position.push({
+      title: "Marketing Executive",
+    });
+    position.push({
+      title: "Sales Executive",
+    });
+    position.push({
+      title: "Graphic Designer",
+    });
+    position.push({
+      title: "Software Developer",
+    });
+    res.send({
+      success: 1,
+      statusCode: 200,
+      items: position,
+      message: 'Positions listed successfully'
+    })
+  };
 }
 module.exports = memberController

@@ -83,6 +83,7 @@ function projectController(methods, options) {
     var userType = userData.type;
     var userId = userData.userId;
     var params = req.query;
+    var filters;
     var projectId;
     let i;
     var page = params.page || 1;
@@ -94,10 +95,14 @@ function projectController(methods, options) {
       skip: offset,
       limit: perPage
     };
-    var filters = {
-      projectCreatedBy: userId,
-      status: 1
-    };
+    if (params.findCriteriaProject) {
+      filters = params.findCriteriaProject;
+    } else {
+      filters = {
+        projectCreatedBy: userId,
+        status: 1
+      };
+    }
     var queryProjection = {
 
     };
@@ -283,9 +288,9 @@ function projectController(methods, options) {
 
   };
 
-// *** Api for archieving a project ****  Author: Shefin S
+  // *** Api for archieving a project ****  Author: Shefin S
 
-  this.archieveProject = async(req,res) => {
+  this.archieveProject = async (req, res) => {
     var userData = req.identity.data;
     var userType = userData.type;
     var userId = userData.userId;
@@ -307,16 +312,16 @@ function projectController(methods, options) {
       isArchieved: true
     };
     try {
-     let updateProjectData = await Project.findOneAndUpdate(filter, update, {
-      new: true,
-      useFindAndModify: false
-    });
-    res.send({
-      success: 1,
-      statusCode: 200,
-      message: 'Project archieved successfully'
-    })
-    }catch(err) {
+      let updateProjectData = await Project.findOneAndUpdate(filter, update, {
+        new: true,
+        useFindAndModify: false
+      });
+      res.send({
+        success: 1,
+        statusCode: 200,
+        message: 'Project archieved successfully'
+      })
+    } catch (err) {
       res.send({
         success: 0,
         statusCode: 500,
@@ -325,7 +330,7 @@ function projectController(methods, options) {
     }
   };
 
-  this.editProject = async(req,res) => {
+  this.editProject = async (req, res) => {
     var projectId = req.params.id;
     var projectName = req.body.taskName;
     var dueDate = req.body.dueDate;

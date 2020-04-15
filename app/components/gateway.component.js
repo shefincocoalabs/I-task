@@ -3,26 +3,17 @@ var config = require('../../config/app.config.js');
 var gatewayUrl = config.gateway.url; 
 module.exports = {
     
-    get: function(path,params,callback) {
-        /**
-         * 
-        */
+    getWithAuth:  function (path, params,bearer,callback) {
         var url = gatewayUrl + path;
-        console.log("Routing path "+url +" through gateway");
-        superagent.get(url).query(params).end((err,res)=> { 
-            callback(err,res.body);
+        console.log("Routing path " + url + " through gateway");
+        superagent.get(url)
+        .query(params)
+        .set({'Content-Type': 'application/json', 'authorization':  bearer})
+        .end((err,res)=> { 
+            callback(err,res.text);
         }); 
+
     },
     
-    patch: function(path,params,callback) {
-        /**
-         * 
-        */
-       var url = gatewayUrl + path;
-       console.log("Routing path "+url +" through gateway");
-       superagent.patch(url).send(params).set('Accept', 'application/json').end((err,res)=> { 
-           callback(err,res.body);
-       }); 
-    }
 }
  
