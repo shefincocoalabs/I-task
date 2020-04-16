@@ -694,6 +694,36 @@ function accountsController(methods, options) {
       });
     }
   };
+
+  this.getFilterOptions = (req, res) => {
+    var filterOptions = [];
+    filterOptions.push({
+      id: '5e81ca631433140dcadd5c8e',
+      title: "Completed",
+    });
+    filterOptions.push({
+      id: '5e81ca631433140dcadd5c8a',
+      title: "Archieved",
+    });
+    filterOptions.push({
+      id: '5e81ca631433140dcadd5c8b',
+      title: "Pending",
+    });
+    filterOptions.push({
+      id: '5e81ca631433140dcadd5c8c',
+      title: "Assigned",
+    });
+    filterOptions.push({
+      id: '5e81ca631433140dcadd5c8d',
+      title: "UnAssigned",
+    });
+    res.send({
+      success: 1,
+      statusCode: 200,
+      items: filterOptions,
+      message: 'Positions listed successfully'
+    });
+  };
 }
 
 function getProjectList(reqObj, callback) {

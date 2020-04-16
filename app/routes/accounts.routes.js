@@ -8,4 +8,5 @@ module.exports = (app,methods,options) => {
     accounts.methods.patch('/reset-password',accounts.resetPasssword, {auth:false});
     accounts.methods.patch('/change-password',accounts.changePasssword, {auth:true});
     accounts.methods.post('/search',accounts.fullSearch, {auth:true});
+    accounts.methods.get('/filter-options',accounts.getFilterOptions, {auth:true});
 }
