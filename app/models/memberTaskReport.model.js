@@ -31,6 +31,7 @@ const MemberTaskReportSchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Member'
   },
+  completedDate: String,
   notes: String,
   status: Number,
   tsCreatedAt: Number,

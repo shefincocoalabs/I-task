@@ -32,6 +32,8 @@ const ProjectSchema = mongoose.Schema({
     ref: 'User'
   },
   isArchieved: Boolean,
+  isCompleted : Boolean,
+  completedDate: String,
   status: Number,
   tsCreatedAt: Number,
   tsModifiedAt: Number

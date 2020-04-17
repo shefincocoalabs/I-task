@@ -302,7 +302,9 @@ function tasksController(methods, options) {
     var userData = req.identity.data;
     var userId = userData.userId;
     var taskId = req.params.id;
+    var projectId = req.body.projectId;
     var notes = req.body.notes;
+    var i;
     var isValidId = ObjectId.isValid(taskId);
     if (!isValidId) {
       var responseObj = {
@@ -313,10 +315,24 @@ function tasksController(methods, options) {
       res.send(responseObj);
       return;
     };
+    if (!projectId) {
+      return res.send({
+        success: 0,
+        statusCode: 400,
+        message: 'ProjectId cannot be empty'
+      })
+    };
+    var today = new Date();
+    var dd = String(today.getDate()).padStart(2, '0');
+    var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    var yyyy = today.getFullYear();
+
+    today = yyyy + '-' + mm + '-' + dd;
     const newTaskReport = new TaskReport({
       taskId: taskId,
       memberId: userId,
       notes: notes,
+      completedDate: today,
       status: 1,
       tsCreatedAt: Number(moment().unix()),
       tsModifiedAt: null
@@ -326,7 +342,8 @@ function tasksController(methods, options) {
       status: 1
     };
     var update = {
-      isCompleted: true
+      isCompleted: true,
+      completedDate: today
     }
     try {
       let saveNewTaskReport = await newTaskReport.save();
@@ -334,6 +351,26 @@ function tasksController(methods, options) {
         new: true,
         useFindAndModify: false
       });
+      let checkAllTasks = await Task.find({
+        projectId: projectId,
+        status: 1
+      });
+
+      for (i = 0; i < checkAllTasks.length; i++) {
+        if (checkAllTasks[i].isCompleted == false) {
+          break;
+        } else {
+          let updateProject = await Project.findOneAndUpdate({
+            _id: projectId
+          }, {
+            isCompleted: true,
+            completedDate: today
+          }, {
+            new: true,
+            useFindAndModify: false
+          });
+        }
+      }
       res.send({
         success: 1,
         statusCode: 200,

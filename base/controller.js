@@ -1,4 +1,5 @@
 const stringify = require('json-stringify-safe');
+var multer = require('multer');
 module.exports = function(name,app,config) {
     
     const jwt = require('jsonwebtoken');
@@ -40,9 +41,7 @@ module.exports = function(name,app,config) {
         }
         options = options?options:this.options;
         //console.log("Options received: "+JSON.stringify(options));
-
         var path = options.useAbsolutePath?path:"/"+name+`/${path}`;
-
         //console.log("Options  is "+JSON.stringify(options));
         path  = path.replace(/\/\//g, "/");
         if(!options.auth) {
@@ -54,15 +53,31 @@ module.exports = function(name,app,config) {
             //console.log("Authorization is needed");
         }
         //console.log(`app.${method}('${path}',fn)`);
-
-
-        app.use(path, function(req,res,next) { 
+        // app.use(path, function(req,res,next) { 
+        //     var params = req.params;
+        //     authHandler(path,params,req,res,next);
+        //     //console.log("Req params are "+JSON.stringify(req.params));
+        // });
+        // app[method](path,fn);
+        var param2 = function(req,res,next) { 
             var params = req.params;
-            authHandler(path,params,req,res,next);
+            authHandler(path,params,req,res,next); 
             //console.log("Req params are "+JSON.stringify(req.params));
-        });
-        app[method](path,fn);
+         }; 
+         var param3 = null; 
+         if(!options.multer) { 
+            app.use(path, param2 ); 
+            app[method](path, fn); 
+         } else{
+            param3 = param2;
+            param2 = (options.multer)(multer); 
+            app.use(path, param2, param3 ); 
+            app[method](path, param2, fn); 
+         }
     };
+
+
+
    // app.use(authHandler);
     function authHandler(path, params, req, res, next){  
         //console.log(JSON.stringify(req.params)); 

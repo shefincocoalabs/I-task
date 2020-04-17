@@ -21,12 +21,16 @@ function accountsController(methods, options) {
 
   //   **** Sign-up **** Author: Shefin S
   this.signUp = async (req, res) => {
+    console.log('files');
+    console.log(req.files);
+    console.log(req.body.name);
     var fullName = req.body.fullName;
     var phone = req.body.phone;
     var email = req.body.email;
+    var position = req.body.position;
     var password = req.body.password;
     var confirmPassword = req.body.confirmPassword;
-    if (!fullName || !email || !phone || !password || !confirmPassword) {
+    if (!fullName || !email || !phone || !position || !password || !confirmPassword) {
       var errors = [];
       if (!fullName) {
         errors.push({
@@ -44,6 +48,12 @@ function accountsController(methods, options) {
         errors.push({
           field: "phone",
           message: "Phone cannot be empty"
+        });
+      }
+      if (!position) {
+        errors.push({
+          field: "position",
+          message: "Position cannot be empty"
         });
       }
       if (!password) {
@@ -76,6 +86,7 @@ function accountsController(methods, options) {
       fullName: fullName,
       email: email,
       phone: phone,
+      position: position,
       password: password,
       status: 1,
       tsCreatedAt: Number(moment().unix()),
@@ -208,6 +219,36 @@ function accountsController(methods, options) {
     }
   };
 
+  // *** Get Proifle ***   Author: Shefin S
+
+  this.getProfile = async (req, res) => {
+    var userData = req.identity.data;
+    var userId = userData.userId;
+    var queryProjection = {
+      fullName: 1,
+      email: 1,
+      phone: 1,
+      position: 1
+    };
+    try {
+      let profileData = await Users.findOne({
+        _id: userId,
+        status: 1
+      }, queryProjection);
+      res.send({
+        success: 1,
+        statusCode: 200,
+        profileData: profileData,
+        message: 'Profile data fetched successfully'
+      });
+    } catch (err) {
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
+    }
+  };
 
   //   **** Update Profile ****  Author: Shefin S
 
@@ -548,12 +589,14 @@ function accountsController(methods, options) {
     var userType = userData.type;
     var userId = userData.userId;
     var type = req.query.type;
+    var filter = req.body.filter;
     var search = req.query.searchKeyword || '.*';
     var findCriteriaTasks;
     var findCriteriaProject;
     var findCriteriaMembers;
     var searchResult;
     var itemsCount;
+    var i;
     search = search + '.*';
     var params = req.query;
     var page = params.page || 1;
@@ -572,6 +615,17 @@ function accountsController(methods, options) {
         message: 'Type cannot be empty'
       })
     };
+    var findCriteriaProject = {};
+    if (filter) {
+      for (i in filter) {
+        if (filter[i] == 'Archieved') {
+          findCriteriaProject.isArchieved = true;
+        };
+        if (filter[i] == 'Completed') {
+          findCriteriaProject.isCompleted = true;
+        };
+      };
+    };
 
     if (userType == 'Admin') {
       findCriteriaTasks = {
@@ -589,14 +643,13 @@ function accountsController(methods, options) {
         taskCreatedBy: userId,
         status: 1
       };
-      findCriteriaProject = {
-        projectName: {
-          $regex: search,
-          $options: 'i'
-        },
-        projectCreatedBy: userId,
-        status: 1
+      findCriteriaProject.projectName = {
+        $regex: search,
+        $options: 'i'
       };
+      findCriteriaProject.projectCreatedBy = userId;
+      findCriteriaProject.status = 1;
+
       findCriteriaMembers = {
         $or: [{
           fullName: {
@@ -629,7 +682,7 @@ function accountsController(methods, options) {
         status: 1
       };
     }
-
+    console.log(findCriteriaProject);
     try {
       if (type == 'Members' || type == 'Tasks') {
         if (type == 'Members') {
@@ -696,33 +749,55 @@ function accountsController(methods, options) {
   };
 
   this.getFilterOptions = (req, res) => {
+    var type = req.query.type;
     var filterOptions = [];
-    filterOptions.push({
-      id: '5e81ca631433140dcadd5c8e',
-      title: "Completed",
-    });
-    filterOptions.push({
-      id: '5e81ca631433140dcadd5c8a',
-      title: "Archieved",
-    });
-    filterOptions.push({
-      id: '5e81ca631433140dcadd5c8b',
-      title: "Pending",
-    });
-    filterOptions.push({
-      id: '5e81ca631433140dcadd5c8c',
-      title: "Assigned",
-    });
-    filterOptions.push({
-      id: '5e81ca631433140dcadd5c8d',
-      title: "UnAssigned",
-    });
+    if (type == 'Project') {
+      filterOptions.push({
+        id: '5e81ca631433140dcadd5c8e',
+        title: "Completed",
+      });
+      filterOptions.push({
+        id: '5e81ca631433140dcadd5c8a',
+        title: "Archieved",
+      });
+      filterOptions.push({
+        id: '5e81ca631433140dcadd5c8b',
+        title: "Pending",
+      });
+
+    } else if (type == 'Tasks') {
+      filterOptions.push({
+        id: '5e81ca631433140dcadd5c8e',
+        title: "Completed",
+      });
+      filterOptions.push({
+        id: '5e81ca631433140dcadd5c8b',
+        title: "Pending",
+      });
+    } else {
+      filterOptions.push({
+        id: '5e81ca631433140dcadd5c8c',
+        title: "Assigned",
+      });
+      filterOptions.push({
+        id: '5e81ca631433140dcadd5c8d',
+        title: "UnAssigned",
+      });
+    }
     res.send({
       success: 1,
       statusCode: 200,
       items: filterOptions,
       message: 'Positions listed successfully'
     });
+  };
+
+  this.getMulter = (multer) => {
+    var upload = multer({
+      dest: 'uploads/'
+    });
+    upload = upload.single('avatar');
+    return upload;
   };
 }
 

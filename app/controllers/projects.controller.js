@@ -56,6 +56,8 @@ function projectController(methods, options) {
         dueDate: dueDate,
         description: description,
         projectCreatedBy: userId,
+        isCompleted: false,
+        completedDate: "",
         isArchieved: false,
         status: 1,
         tsCreatedAt: Number(moment().unix()),
@@ -85,7 +87,8 @@ function projectController(methods, options) {
     var params = req.query;
     var filters;
     var projectId;
-    let i;
+    var i;
+    var j;
     var page = params.page || 1;
     page = page > 0 ? page : 1;
     var perPage = Number(params.perPage) || projectsConfig.resultsPerPage;
@@ -122,6 +125,10 @@ function projectController(methods, options) {
             projectId: projectId,
             status: 1
           });
+          let taskStatus = await Task.find({
+            projectId: projectId,
+            status: 1
+          });
           let countMembers = await (await Task.distinct('memberId', {
             projectId: projectId,
             status: 1
@@ -131,12 +138,13 @@ function projectController(methods, options) {
           projectDetails.projectCode = listProjects[i].projectCode;
           projectDetails.dueDate = listProjects[i].dueDate;
           projectDetails.isArchieved = listProjects[i].isArchieved;
+          projectDetails.isCompleted = listProjects[i].isCompleted;
+          projectDetails.completedDate = listProjects[i].completedDate;
           projectDetails.taskCount = countTasks;
           projectDetails.membersCount = countMembers;
           promiseArr.push(listProjects[i]);
           items.push(projectDetails);
         };
-
         //now execute promise all
         Promise.all(promiseArr)
           .then((result) => res.send({
@@ -159,10 +167,17 @@ function projectController(methods, options) {
         let listProjectMemberData = await Task.find({
           memberId: userId,
           status: 1
-        }).limit(perPage).populate({
+        }, {}, pageParams).limit(perPage).populate({
           path: 'projectId',
-          select: 'projectName dueDate'
+          select: 'projectName dueDate projectCode'
         }).lean();
+        let countProjectMemberData = await Task.countDocuments({
+          memberId: userId,
+          status: 1
+        });
+        var totalPages = countProjectMemberData / perPage;
+        totalPages = Math.ceil(totalPages);
+        var hasNextPage = page < totalPages;
         let promiseArr = [];
         let memberDetailsArray = [];
         for (i = 0; i < listProjectMemberData.length; i++) {
@@ -180,6 +195,8 @@ function projectController(methods, options) {
           memberProjectDetails.projectName = listProjectMemberData[i].projectId.projectName;
           memberProjectDetails.projectCode = listProjectMemberData[i].projectId.projectCode;
           memberProjectDetails.dueDate = listProjectMemberData[i].projectId.dueDate;
+          memberProjectDetails.isCompleted = listProjectMemberData[i].projectId.isCompleted;
+          memberProjectDetails.completedDate = listProjectMemberData[i].projectId.completedDate;
           memberProjectDetails.taskCount = countTasks;
           memberProjectDetails.membersCount = countMembers;
           promiseArr.push(listProjectMemberData[i]);
@@ -192,6 +209,11 @@ function projectController(methods, options) {
               success: 1,
               statusCode: 200,
               items: memberDetailsArray,
+              page: page,
+              perPage: perPage,
+              hasNextPage: hasNextPage,
+              totalItems: countProjectMemberData,
+              totalPages: totalPages,
               message: 'Project listed successfully'
             }))
           .catch((err) => res.send({
@@ -234,6 +256,8 @@ function projectController(methods, options) {
       projectName: 1,
       dueDate: 1,
       description: 1,
+      isCompleted: 1,
+      completedDate: 1
     };
     var taskQueryProjection = {
       taskName: 1,
@@ -270,6 +294,8 @@ function projectController(methods, options) {
       projectDetails.projectName = projectData.projectName;
       projectDetails.dueDate = projectData.dueDate;
       projectDetails.description = projectData.description;
+      projectDetails.isCompleted = projectData.isCompleted;
+      projectDetails.completedDate = projectData.completedDate;
       projectDetails.members = items;
       projectDetails.membersTask = projectMembersTasks;
       res.send({
@@ -329,6 +355,8 @@ function projectController(methods, options) {
       });
     }
   };
+
+  // *** Update Project Details ****   Author: Shefin S
 
   this.editProject = async (req, res) => {
     var projectId = req.params.id;
