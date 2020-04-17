@@ -253,6 +253,7 @@ function tasksController(methods, options) {
       dueDate: 1,
       description: 1,
       isCompleted: 1,
+      completedDate: 1,
       projectId: 1,
       memberId: 1
     };
