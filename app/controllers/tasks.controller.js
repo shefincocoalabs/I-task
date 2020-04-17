@@ -105,7 +105,8 @@ function tasksController(methods, options) {
       dueDate: 1,
       memberId: 1,
       projectId: 1,
-      isCompleted: 1
+      isCompleted: 1,
+      completedDate: 1
     };
 
     var queryProjectionMemberTask = {
