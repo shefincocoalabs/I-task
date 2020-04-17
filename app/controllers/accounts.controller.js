@@ -223,7 +223,9 @@ function accountsController(methods, options) {
 
   this.getProfile = async (req, res) => {
     var userData = req.identity.data;
+    var userType = userData.type;
     var userId = userData.userId;
+    var profileData;
     var queryProjection = {
       fullName: 1,
       email: 1,
@@ -231,16 +233,29 @@ function accountsController(methods, options) {
       position: 1
     };
     try {
-      let profileData = await Users.findOne({
-        _id: userId,
-        status: 1
-      }, queryProjection);
-      res.send({
-        success: 1,
-        statusCode: 200,
-        profileData: profileData,
-        message: 'Profile data fetched successfully'
-      });
+      if (userType == 'Admin') {
+        profileData = await Users.findOne({
+          _id: userId,
+          status: 1
+        }, queryProjection);
+        res.send({
+          success: 1,
+          statusCode: 200,
+          profileData: profileData,
+          message: 'Profile data fetched successfully'
+        });
+      } else {
+        profileData = await Members.findOne({
+          _id: userId,
+          status: 1
+        }, queryProjection);
+        res.send({
+          success: 1,
+          statusCode: 200,
+          profileData: profileData,
+          message: 'Profile data fetched successfully'
+        });
+      }
     } catch (err) {
       res.send({
         success: 0,
