@@ -279,6 +279,9 @@ function tasksController(methods, options) {
         let memberTaskDetail = await Task.findOne(filterMemberTasks, queryProjection).populate([{
           path: 'projectId',
           select: 'projectName'
+        },{
+          path: 'memberId',
+          select: 'fullName image position'
         }]);
         res.send({
           success: 1,
@@ -327,7 +330,7 @@ function tasksController(methods, options) {
     };
     var today = new Date();
     var dd = String(today.getDate()).padStart(2, '0');
-    var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    var mm = String(today.getMonth() + 1).padStart(2, '0'); 
     var yyyy = today.getFullYear();
 
     today = yyyy + '-' + mm + '-' + dd;

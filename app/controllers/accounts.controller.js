@@ -232,16 +232,24 @@ function accountsController(methods, options) {
       phone: 1,
       position: 1
     };
+    var userDetails = {};
     try {
       if (userType == 'Admin') {
         profileData = await Users.findOne({
           _id: userId,
           status: 1
         }, queryProjection);
+        userDetails.userId = profileData._id;
+        userDetails.fullName = profileData.fullName;
+        userDetails.email = profileData.email;
+        userDetails.phone = profileData.phone;
+        userDetails.position = profileData.position;
+        userDetails.type =  userType
+        userDetails.image = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
         res.send({
           success: 1,
           statusCode: 200,
-          profileData: profileData,
+          userDetails: userDetails,
           message: 'Profile data fetched successfully'
         });
       } else {
@@ -249,10 +257,17 @@ function accountsController(methods, options) {
           _id: userId,
           status: 1
         }, queryProjection);
+        userDetails.userId = profileData._id;
+        userDetails.fullName = profileData.fullName;
+        userDetails.email = profileData.email;
+        userDetails.phone = profileData.phone;
+        userDetails.position = profileData.position;
+        userDetails.type =  userType
+        userDetails.image = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
         res.send({
           success: 1,
           statusCode: 200,
-          profileData: profileData,
+          userDetails: userDetails,
           message: 'Profile data fetched successfully'
         });
       }
