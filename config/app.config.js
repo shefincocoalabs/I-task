@@ -1,6 +1,8 @@
 const path = require('path');
+var fs = require('fs');
 console.log(__dirname);
 console.log('dirname');
+console.log(fs.readFile(__dirname + '/../'));
 var relativeCommonPath = "../I-task-uploads/";
 module.exports = {
   gateway: {
