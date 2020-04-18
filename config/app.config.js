@@ -1,4 +1,5 @@
-var commonStorePath = 'http://172.104.61.150/haritha-keralam/common/uploads/'
+
+var relativeCommonPath = "../I-task-uploads/";
 module.exports = {
   gateway: {
     url: "http://localhost:5000"
@@ -7,6 +8,7 @@ module.exports = {
     expirySeconds: 2 * 60
   },
   members: {
+    imageUploadPath: relativeCommonPath + "members/images",
     resultsPerPage: 30,
   },
   tasks: {
