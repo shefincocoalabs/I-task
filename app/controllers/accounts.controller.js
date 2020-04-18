@@ -244,7 +244,7 @@ function accountsController(methods, options) {
         userDetails.email = profileData.email;
         userDetails.phone = profileData.phone;
         userDetails.position = profileData.position;
-        userDetails.type =  userType
+        userDetails.type = userType
         userDetails.image = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
         res.send({
           success: 1,
@@ -262,7 +262,7 @@ function accountsController(methods, options) {
         userDetails.email = profileData.email;
         userDetails.phone = profileData.phone;
         userDetails.position = profileData.position;
-        userDetails.type =  userType
+        userDetails.type = userType
         userDetails.image = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
         res.send({
           success: 1,
@@ -283,6 +283,8 @@ function accountsController(methods, options) {
   //   **** Update Profile ****  Author: Shefin S
 
   this.updateProfile = async (req, res) => {
+    console.log('req.file');
+    console.log(req.file);
     var userData = req.identity.data;
     var userId = userData.userId;
     var fullName = req.body.fullName;
@@ -619,7 +621,7 @@ function accountsController(methods, options) {
     var userType = userData.type;
     var userId = userData.userId;
     var type = req.query.type;
-    var filter = req.body.filter;
+    var filter = req.query.filter;
     var search = req.query.searchKeyword || '.*';
     var findCriteriaTasks;
     var findCriteriaProject;
@@ -646,33 +648,32 @@ function accountsController(methods, options) {
       })
     };
     var findCriteriaProject = {};
+    var findCriteriaTasks = {};
+    var findCriteriaMembers = {};
     if (filter) {
-      for (i in filter) {
-        if (filter[i] == 'Archieved') {
-          findCriteriaProject.isArchieved = true;
-        };
-        if (filter[i] == 'Completed') {
-          findCriteriaProject.isCompleted = true;
-        };
+      if (filter == 'Archieved') {
+        findCriteriaProject.isArchieved = true;
+      };
+      if (filter == 'Completed') {
+        findCriteriaProject.isCompleted = true;
+        findCriteriaTasks.isCompleted = true;
+      };
+      if (filter == 'Pending') {
+        findCriteriaProject.isCompleted = false;
+        findCriteriaTasks.isCompleted = false;
       };
     };
 
     if (userType == 'Admin') {
-      findCriteriaTasks = {
-        $or: [{
-          taskName: {
-            $regex: search,
-            $options: 'i'
-          }
-        }, {
-          dueDate: {
-            $regex: search,
-            $options: 'i'
-          }
-        }],
-        taskCreatedBy: userId,
-        status: 1
+      // Tasks findcriteria using searchKeyword and filter
+      findCriteriaTasks.taskName = {
+        $regex: search,
+        $options: 'i'
       };
+      findCriteriaTasks.taskCreatedBy = userId;
+      findCriteriaTasks.status = 1;
+
+      // Project findcriteria using searchKeyword and filter
       findCriteriaProject.projectName = {
         $regex: search,
         $options: 'i'
@@ -712,7 +713,6 @@ function accountsController(methods, options) {
         status: 1
       };
     }
-    console.log(findCriteriaProject);
     try {
       if (type == 'Members' || type == 'Tasks') {
         if (type == 'Members') {
@@ -725,7 +725,9 @@ function accountsController(methods, options) {
         } else if (type == 'Tasks') {
           searchResult = await Task.find(findCriteriaTasks, {
               taskName: 1,
-              dueDate: 1
+              dueDate: 1,
+              isCompleted: 1,
+              completedDate: 1
             }, pageParams)
             .populate([{
                 path: 'memberId',
@@ -804,16 +806,7 @@ function accountsController(methods, options) {
         id: '5e81ca631433140dcadd5c8b',
         title: "Pending",
       });
-    } else {
-      filterOptions.push({
-        id: '5e81ca631433140dcadd5c8c',
-        title: "Assigned",
-      });
-      filterOptions.push({
-        id: '5e81ca631433140dcadd5c8d',
-        title: "UnAssigned",
-      });
-    }
+    };
     res.send({
       success: 1,
       statusCode: 200,
