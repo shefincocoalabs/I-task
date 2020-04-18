@@ -731,7 +731,7 @@ function accountsController(methods, options) {
             }, pageParams)
             .populate([{
                 path: 'memberId',
-                select: 'fullName image'
+                select: 'fullName image position'
               },
               {
                 path: 'projectId',
