@@ -379,7 +379,7 @@ function memberController(methods, options) {
 
 
   this.getMulter = (multer) => {
-    let path = membersConfig.imageUploadPath;
+    let path = __dirname + '/uploads/';
     const storage = multer.diskStorage({
       destination: function (req, file, cb) {
         cb(null, path)
