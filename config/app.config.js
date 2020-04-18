@@ -1,6 +1,6 @@
 
-// console.log(__dirname + '../../');
-// console.log('dirname');
+console.log(__dirname + '../../');
+console.log('dirname');
 var relativeCommonPath = "../I-task-uploads/";
 module.exports = {
   gateway: {
