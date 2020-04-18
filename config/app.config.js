@@ -6,7 +6,7 @@ module.exports = {
     expirySeconds: 2 * 60
   },
   members: {
-    // imageUploadPath: relativeCommonPath + "members/images",
+    imageUploadPath: __dirname + '/uploads/',
     resultsPerPage: 30,
   },
   tasks: {
