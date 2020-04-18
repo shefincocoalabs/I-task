@@ -53,28 +53,31 @@ module.exports = function(name,app,config) {
             //console.log("Authorization is needed");
         }
         //console.log(`app.${method}('${path}',fn)`);
-        // app.use(path, function(req,res,next) { 
+        // app.use(path, function(req,res,next) {
         //     var params = req.params;
         //     authHandler(path,params,req,res,next);
         //     //console.log("Req params are "+JSON.stringify(req.params));
         // });
         // app[method](path,fn);
-        var param2 = function(req,res,next) { 
+        var param2 = function(req,res,next) {
             var params = req.params;
-            authHandler(path,params,req,res,next); 
+            authHandler(path,params,req,res,next);
             //console.log("Req params are "+JSON.stringify(req.params));
-         }; 
-         var param3 = null; 
-         if(!options.multer) { 
-            app.use(path, param2 ); 
-            app[method](path, fn); 
+         };
+         var param3 = null;
+         if(!options.multer) {
+            app.use(path, param2 );
+            app[method](path, fn);
          } else{
+             console.log("here1111111111111111111111111")
             param3 = param2;
-            param2 = (options.multer)(multer); 
-            app.use(path, param2, param3 ); 
-            app[method](path, param2, fn); 
+            param2 = (options.multer)(multer);
+            app.use(path, param2, param3 );
+            app[method](path, param2, fn);
          }
     };
+
+
 
 
 

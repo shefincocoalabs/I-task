@@ -8,6 +8,9 @@ function memberController(methods, options) {
 
   //   **** Add a new member ****  Author: Shefin S
   this.addMember = async (req, res) => {
+    console.log('file');
+    console.log(req.file);
+    var fileName = req.file.fileName;
     var userData = req.identity.data;
     var userId = userData.userId;
     var fullName = req.body.fullName;
@@ -59,7 +62,7 @@ function memberController(methods, options) {
       email: email,
       phone: phone,
       position: position,
-      image: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png',
+      image: fileName,
       password: password,
       createdBy: userId,
       status: 1,
@@ -352,7 +355,7 @@ function memberController(methods, options) {
     }
   };
 
-  this.listPositions = (req,res) => {
+  this.listPositions = (req, res) => {
     var position = [];
     position.push({
       title: "Marketing Executive",
@@ -373,5 +376,52 @@ function memberController(methods, options) {
       message: 'Positions listed successfully'
     })
   };
+
+
+  this.getMulter = (multer) => {
+    let path = 'uploads/';
+    const storage = multer.diskStorage({
+      destination: function (req, file, cb) {
+        cb(null, path)
+      },
+      filename: function (req, file, cb) {
+        let pathImage = path + file.originalname
+        console.log("first")
+        let imageName = makeFileNameUnique(pathImage);
+        imageName = imageName.replace(path, "");
+        console.log(imageName)
+        cb(null, imageName)
+      }
+    })
+    var upload = multer({
+      storage: storage
+    })
+    //   upload = upload.array('image');
+    upload = upload.single('avatar');
+    // multiUpload = upload.arrays('image');
+    return upload;
+    // return upload.array('image');
+  }
+}
+
+function makeFileNameUnique(fileAbsPath,orginalPath,index) {
+  const fs = require("fs");
+  if(!fileAbsPath) return fileAbsPath;
+  orginalPath = orginalPath?orginalPath:fileAbsPath;
+  if(!fs.existsSync(fileAbsPath)) {
+      //console.log("File "+fileAbsPath+" does not exist. No renaming needed");
+      return fileAbsPath;
+  } else {
+      index = index?index:0;
+      index++;
+      var fileAbsPathParts = orginalPath.split(".");
+      var positionToModify = fileAbsPathParts.length-2;
+      if(fileAbsPathParts.length == 1) {
+          positionToModify = 0;
+      }
+      fileAbsPathParts[positionToModify] += "-"+index;
+      fileAbsPath = fileAbsPathParts.join(".");
+      return makeFileNameUnique(fileAbsPath,orginalPath,index);
+  }
 }
 module.exports = memberController

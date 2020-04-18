@@ -88,7 +88,6 @@ function projectController(methods, options) {
     var filters;
     var projectId;
     var i;
-    var j;
     var page = params.page || 1;
     page = page > 0 ? page : 1;
     var perPage = Number(params.perPage) || projectsConfig.resultsPerPage;
