@@ -1,7 +1,6 @@
-
-console.log(__dirname + '../../');
-console.log('dirname');
-var relativeCommonPath = "../I-task-uploads/";
+var relativeCommonPath = "../../../../../../";
+console.log('relativeCommonPath');
+console.log(relativeCommonPath);
 module.exports = {
   gateway: {
     url: "http://localhost:5000"
