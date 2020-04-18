@@ -169,7 +169,7 @@ function projectController(methods, options) {
           status: 1
         }, {}, pageParams).limit(perPage).populate({
           path: 'projectId',
-          select: 'projectName dueDate projectCode'
+          select: 'projectName dueDate projectCode completedDate isCompleted isArchieved'
         }).lean();
         let countProjectMemberData = await Task.countDocuments({
           memberId: userId,
