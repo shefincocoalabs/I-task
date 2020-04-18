@@ -1,6 +1,3 @@
-var relativeCommonPath = "../../../../../../";
-console.log('relativeCommonPath');
-console.log(relativeCommonPath);
 module.exports = {
   gateway: {
     url: "http://localhost:5000"
@@ -9,7 +6,7 @@ module.exports = {
     expirySeconds: 2 * 60
   },
   members: {
-    imageUploadPath: relativeCommonPath + "members/images",
+    // imageUploadPath: relativeCommonPath + "members/images",
     resultsPerPage: 30,
   },
   tasks: {
