@@ -8,9 +8,6 @@ function memberController(methods, options) {
 
   //   **** Add a new member ****  Author: Shefin S
   this.addMember = async (req, res) => {
-    console.log('file');
-    console.log(req.file);
-    var fileName = req.file.fileName;
     var userData = req.identity.data;
     var userId = userData.userId;
     var fullName = req.body.fullName;
@@ -190,6 +187,61 @@ function memberController(methods, options) {
       });
     }
   };
+
+// *** Add multiple tasks from existing unassigned tasks to the member ***  Author: Shefin S
+
+  this.addExisting = async (req, res) => {
+    var memberId = req.body.memberId;
+    var tasks = req.body.tasks;
+    if (!memberId || !tasks) {
+      var errors = [];
+      if (!memberId) {
+        errors.push({
+          field: "memberId",
+          message: "memberId cannot be empty"
+        });
+      }
+      if (!tasks) {
+        errors.push({
+          field: "tasks",
+          message: "tasks cannot be empty"
+        });
+      }
+      return res.send({
+        success: 0,
+        statusCode: 400,
+        errors: errors,
+      });
+    };
+    var i;
+    let promiseArr = [];
+    for (i = 0; i < tasks.length; i++) {
+      promiseArr.push(tasks[i]);
+      var filter = {
+        _id: tasks[i],
+        status: 1
+      };
+      var update = {
+        memberId: memberId
+      };
+      let updateTask = await Task.findOneAndUpdate(filter, update, {
+        new: true,
+        useFindAndModify: false
+      });
+    };
+    Promise.all(promiseArr)
+      .then((result) =>
+        res.send({
+          success: 1,
+          statusCode: 200,
+          message: 'Tasks added successfully'
+        }))
+      .catch((err) => res.send({
+        success: 0,
+        statusCode: 400,
+        message: err.message
+      }));
+  }
 
   // *** List task of a member ***  Author: Shefin S
   this.listTask = async (req, res) => {
@@ -379,7 +431,7 @@ function memberController(methods, options) {
 
 
   this.getMulter = (multer) => {
-    let path =  membersConfig.imageUploadPath
+    let path = 'uploads/'
     console.log('path');
     console.log(path);
     const storage = multer.diskStorage({
@@ -406,24 +458,24 @@ function memberController(methods, options) {
   }
 }
 
-function makeFileNameUnique(fileAbsPath,orginalPath,index) {
+function makeFileNameUnique(fileAbsPath, orginalPath, index) {
   const fs = require("fs");
-  if(!fileAbsPath) return fileAbsPath;
-  orginalPath = orginalPath?orginalPath:fileAbsPath;
-  if(!fs.existsSync(fileAbsPath)) {
-      //console.log("File "+fileAbsPath+" does not exist. No renaming needed");
-      return fileAbsPath;
+  if (!fileAbsPath) return fileAbsPath;
+  orginalPath = orginalPath ? orginalPath : fileAbsPath;
+  if (!fs.existsSync(fileAbsPath)) {
+    //console.log("File "+fileAbsPath+" does not exist. No renaming needed");
+    return fileAbsPath;
   } else {
-      index = index?index:0;
-      index++;
-      var fileAbsPathParts = orginalPath.split(".");
-      var positionToModify = fileAbsPathParts.length-2;
-      if(fileAbsPathParts.length == 1) {
-          positionToModify = 0;
-      }
-      fileAbsPathParts[positionToModify] += "-"+index;
-      fileAbsPath = fileAbsPathParts.join(".");
-      return makeFileNameUnique(fileAbsPath,orginalPath,index);
+    index = index ? index : 0;
+    index++;
+    var fileAbsPathParts = orginalPath.split(".");
+    var positionToModify = fileAbsPathParts.length - 2;
+    if (fileAbsPathParts.length == 1) {
+      positionToModify = 0;
+    }
+    fileAbsPathParts[positionToModify] += "-" + index;
+    fileAbsPath = fileAbsPathParts.join(".");
+    return makeFileNameUnique(fileAbsPath, orginalPath, index);
   }
 }
 module.exports = memberController

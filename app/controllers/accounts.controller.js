@@ -1,5 +1,4 @@
 var gateway = require('../components/gateway.component.js');
-
 function accountsController(methods, options) {
   var Users = require('../models/user.model.js');
   var Members = require('../models/member.model.js');
@@ -20,10 +19,8 @@ function accountsController(methods, options) {
   const crypto = require('crypto');
 
   //   **** Sign-up **** Author: Shefin S
+
   this.signUp = async (req, res) => {
-    console.log('files');
-    console.log(req.files);
-    console.log(req.body.name);
     var fullName = req.body.fullName;
     var phone = req.body.phone;
     var email = req.body.email;

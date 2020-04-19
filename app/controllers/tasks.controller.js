@@ -163,6 +163,8 @@ function tasksController(methods, options) {
     }
   };
 
+  // *** List unassigned tasks ****  Author: Shefin S
+
   this.listUnassignedTasks = async (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
@@ -279,7 +281,7 @@ function tasksController(methods, options) {
         let memberTaskDetail = await Task.findOne(filterMemberTasks, queryProjection).populate([{
           path: 'projectId',
           select: 'projectName'
-        },{
+        }, {
           path: 'memberId',
           select: 'fullName image position'
         }]);
@@ -330,7 +332,7 @@ function tasksController(methods, options) {
     };
     var today = new Date();
     var dd = String(today.getDate()).padStart(2, '0');
-    var mm = String(today.getMonth() + 1).padStart(2, '0'); 
+    var mm = String(today.getMonth() + 1).padStart(2, '0');
     var yyyy = today.getFullYear();
 
     today = yyyy + '-' + mm + '-' + dd;
