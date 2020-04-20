@@ -255,6 +255,7 @@ function projectController(methods, options) {
       projectName: 1,
       dueDate: 1,
       description: 1,
+      isArchieved: 1,
       isCompleted: 1,
       completedDate: 1
     };
