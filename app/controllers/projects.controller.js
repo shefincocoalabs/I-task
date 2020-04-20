@@ -260,7 +260,9 @@ function projectController(methods, options) {
     };
     var taskQueryProjection = {
       taskName: 1,
-      dueDate: 1
+      dueDate: 1,
+      isCompleted: 1,
+      completedDate: 1
     }
     try {
       let projectData = await Project.findOne(filter, queryProjection);
@@ -293,6 +295,7 @@ function projectController(methods, options) {
       projectDetails.projectName = projectData.projectName;
       projectDetails.dueDate = projectData.dueDate;
       projectDetails.description = projectData.description;
+      projectDetails.isArchieved = projectData.isArchieved;
       projectDetails.isCompleted = projectData.isCompleted;
       projectDetails.completedDate = projectData.completedDate;
       projectDetails.members = items;
