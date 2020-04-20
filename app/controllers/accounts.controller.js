@@ -1,4 +1,5 @@
 var gateway = require('../components/gateway.component.js');
+
 function accountsController(methods, options) {
   var Users = require('../models/user.model.js');
   var Members = require('../models/member.model.js');
@@ -617,6 +618,7 @@ function accountsController(methods, options) {
     var userData = req.identity.data;
     var userType = userData.type;
     var userId = userData.userId;
+    console.log(userId);
     var type = req.query.type;
     var filter = req.query.filter;
     var search = req.query.searchKeyword || '.*';
@@ -694,21 +696,20 @@ function accountsController(methods, options) {
         status: 1
       };
     } else {
-      findCriteriaTasks = {
-        $or: [{
-          taskName: {
-            $regex: search,
-            $options: 'i'
-          }
-        }, {
-          dueDate: {
-            $regex: search,
-            $options: 'i'
-          }
-        }],
-        memberId: userId,
-        status: 1
+      // Tasks findcriteria using searchKeyword and filter
+      findCriteriaTasks.taskName = {
+        $regex: search,
+        $options: 'i'
       };
+      findCriteriaTasks.memberId = userId;
+      findCriteriaTasks.status = 1;
+      // Projects findcriteria using searchKeyword and filter
+      findCriteriaProject.projectName = {
+        $regex: search,
+        $options: 'i'
+      };
+      findCriteriaProject.memberId = userId;
+      findCriteriaProject.status = 1;
     }
     try {
       if (type == 'Members' || type == 'Tasks') {
@@ -724,7 +725,7 @@ function accountsController(methods, options) {
               taskName: 1,
               dueDate: 1,
               isCompleted: 1,
-              completedDate: 1
+              completedDate: 1,
             }, pageParams)
             .populate([{
                 path: 'memberId',
@@ -734,7 +735,9 @@ function accountsController(methods, options) {
                 path: 'projectId',
                 select: 'projectName dueDate'
               }
-            ]);
+            ])
+            .lean();
+        
           itemsCount = await Task.countDocuments(findCriteriaTasks);
         }
         var totalPages = itemsCount / perPage;
@@ -754,6 +757,9 @@ function accountsController(methods, options) {
       } else {
         let prokectListReqObj = {
           findCriteriaProject,
+          page,
+          perPage,
+          userType,
           bearer,
           url: '/projects/list',
         };
