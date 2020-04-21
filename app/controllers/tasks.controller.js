@@ -476,9 +476,7 @@ function tasksController(methods, options) {
     if (projectId) {
       update.projectId = projectId;
     };
-    if (memberId) {
-      update.memberId = memberId;
-    }
+    
     var filter = {
       _id: taskId,
       status: 1
