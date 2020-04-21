@@ -280,11 +280,17 @@ function memberController(methods, options) {
       taskName: 1,
       dueDate: 1,
       memberId: 1,
+      projectId: 1,
+      isCompleted: 1,
+      completedDate: 1
     };
     try {
       let memberTask = await Task.find(filters, queryProjection, pageParams).populate([{
         path: 'memberId',
         select: 'fullName image'
+      },{
+        path: 'projectId',
+        select: 'projectName dueDate'
       }])
       let itemsCount = await Task.countDocuments(filters);
       var totalPages = itemsCount / perPage;
