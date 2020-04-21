@@ -1,6 +1,7 @@
 function memberController(methods, options) {
   var Member = require('../models/member.model.js');
   var Task = require('../models/task.model.js');
+  var Project = require('../models/project.model.js');
   var config = require('../../config/app.config.js');
   var membersConfig = config.members;
   var moment = require('moment');
