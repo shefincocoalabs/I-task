@@ -45,6 +45,7 @@ const TaskSchema = mongoose.Schema({
   },
   isCompleted: Boolean,
   completedDate: String,
+  documents: Array,
   status: Number,
   tsCreatedAt: Number,
   tsModifiedAt: Number

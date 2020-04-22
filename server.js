@@ -9,17 +9,9 @@ env = env ? env : "development";
 console.log("Environment is " + env);
 const dbConfig = require('./config/database.config.js')[env];
 
-if (!dbConfig) {
-  console.log("Database configuaration for environment " + env + " is not in the db config file. Exiting...");
-  process.exit(0);
-}
-const params = require('./config/params.config');
-var gateway = require('./app/components/gateway.component');
-const Sequelize = require('sequelize');
-const Controller = require('./base/controller.js');
 const mongoose = require('mongoose');
+mongoose.Promise = global.Promise;
 
-var sequelize = null;
 //jwttoken and verification
 
 
@@ -31,7 +23,6 @@ app.use(cors());
 app.use(bodyParser.urlencoded({
   extended: true
 }))
-
 app.use(bodyParser.json());
 module.exports = {
   connectToDb: function (callback) {
@@ -49,32 +40,9 @@ module.exports = {
       process.exit();
     });
   },
-  methods: {
-    loadController: function (controller, options) {
-      var config = params[env] ? params[env] : {
-        jwt: {
-          secret: "myapp"
-        }
-      };
-      config.options = options;
-      var controllerBaseObj = new Controller(controller, app, config);
-
-      var path = './app/controllers/' + controller + ".controller.js";
-      console.log("Loading controller " + path);
-      var controller = require(path);
-      controller = new controller(controllerBaseObj, options);
-
-
-
-      controller.methods = controllerBaseObj;
-      controller.options = options;
-      return controller;
-    }
-  },
   start: function (serviceName, routes) {
-    var that = this;
-    this.connectToDb(function (db) {
-      var options = db
+    this.connectToDb(function () {
+
       var port = process.env.port ? process.env.port : null;
       port = port ? port : argv.port ? argv.port : null;
       if (!port) {
@@ -89,7 +57,7 @@ module.exports = {
         while (i < len) {
           route = routes[i];
           console.log("Loading route " + route);
-          require('./app/routes/' + route + '.routes.js')(app, that.methods, options);
+          require('./app/routes/' + route + '.routes.js')(app);
           i++;
         }
         app.listen(port, () => {
@@ -100,11 +68,6 @@ module.exports = {
 
     });
 
-
-
   }
-
-
-
 
 };

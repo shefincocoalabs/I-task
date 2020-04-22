@@ -1,6 +1,4 @@
-var gateway = require('../components/gateway.component.js');
-
-function accountsController(methods, options) {
+  var gateway = require('../components/gateway.component.js');
   var Users = require('../models/user.model.js');
   var Members = require('../models/member.model.js');
   var Task = require('../models/task.model.js');
@@ -21,7 +19,7 @@ function accountsController(methods, options) {
 
   //   **** Sign-up **** Author: Shefin S
 
-  this.signUp = async (req, res) => {
+  exports.signUp = async (req, res) => {
     var fullName = req.body.fullName;
     var phone = req.body.phone;
     var email = req.body.email;
@@ -86,6 +84,7 @@ function accountsController(methods, options) {
       phone: phone,
       position: position,
       password: password,
+      image: '',
       status: 1,
       tsCreatedAt: Number(moment().unix()),
       tsModifiedAt: null
@@ -119,7 +118,7 @@ function accountsController(methods, options) {
 
   //   **** Login ****  Author: Shefin S
 
-  this.login = async (req, res) => {
+  exports.login = async (req, res) => {
     var email = req.body.email;
     var password = req.body.password;
     var userType = req.body.userType;
@@ -219,7 +218,7 @@ function accountsController(methods, options) {
 
   // *** Get Proifle ***   Author: Shefin S
 
-  this.getProfile = async (req, res) => {
+  exports.getProfile = async (req, res) => {
     var userData = req.identity.data;
     var userType = userData.type;
     var userId = userData.userId;
@@ -280,16 +279,15 @@ function accountsController(methods, options) {
 
   //   **** Update Profile ****  Author: Shefin S
 
-  this.updateProfile = async (req, res) => {
-    console.log('req.file');
-    console.log(req.file);
+  exports.updateProfile = async (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
     var fullName = req.body.fullName;
     var email = req.body.email;
     var phone = req.body.phone;
-    var position = req.body.position
-    if (!fullName && !email && !phone && !position) {
+    var position = req.body.position;
+    var profileImage = req.file;
+    if (!fullName && !email && !phone && !position && !profileImage) {
       return res.send({
         success: 0,
         statusCode: 401,
@@ -309,6 +307,9 @@ function accountsController(methods, options) {
     if (position) {
       update.position = position;
     };
+    if(profileImage) {
+      update.image = profileImage.filename;
+    }
     var filter = {
       _id: userId
     };
@@ -326,7 +327,7 @@ function accountsController(methods, options) {
 
   // **** Send OTP **** Author: Shefin S
 
-  this.sendSms = async (req, res) => {
+  exports.sendSms = async (req, res) => {
     var phone = req.body.phone;
     var expiry = Date.now() + (otpConfig.expirySeconds * 1000);
     if (!phone) {
@@ -384,7 +385,7 @@ function accountsController(methods, options) {
   };
 
   // *** Verify OTP ***  Author: Shefin S
-  this.verifyOtp = async (req, res) => {
+  exports.verifyOtp = async (req, res) => {
     var phone = req.body.phone;
     var otp = req.body.otp;
     var apiToken = req.body.apiToken;
@@ -473,7 +474,7 @@ function accountsController(methods, options) {
   };
 
   // *** Reset Password ***  Author: Shefin S
-  this.resetPasssword = async (req, res) => {
+  exports.resetPasssword = async (req, res) => {
     var password = req.body.password;
     var confirmPassword = req.body.confirmPassword;
     var passwordResetToken = req.body.passwordResetToken;
@@ -537,7 +538,7 @@ function accountsController(methods, options) {
 
   // *** Change Password ****  Author: Shefin S
 
-  this.changePasssword = async (req, res) => {
+  exports.changePasssword = async (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
     var currentPassword = req.body.currentPassword;
@@ -613,12 +614,11 @@ function accountsController(methods, options) {
 
   // *** Search using keyword ***  Author: Shefin S
 
-  this.fullSearch = async (req, res) => {
+  exports.fullSearch = async (req, res) => {
     var bearer = req.headers['authorization'];
     var userData = req.identity.data;
     var userType = userData.type;
     var userId = userData.userId;
-    console.log(userId);
     var type = req.query.type;
     var filter = req.query.filter;
     var search = req.query.searchKeyword || '.*';
@@ -785,7 +785,7 @@ function accountsController(methods, options) {
     }
   };
 
-  this.getFilterOptions = (req, res) => {
+  exports.getFilterOptions = (req, res) => {
     var type = req.query.type;
     var filterOptions = [];
     if (type == 'Project') {
@@ -820,14 +820,6 @@ function accountsController(methods, options) {
     });
   };
 
-  this.getMulter = (multer) => {
-    var upload = multer({
-      dest: 'uploads/'
-    });
-    upload = upload.single('avatar');
-    return upload;
-  };
-}
 
 function getProjectList(reqObj, callback) {
   let bearer = reqObj.bearer;
@@ -843,4 +835,4 @@ function getProjectList(reqObj, callback) {
   });
 
 };
-module.exports = accountsController
+

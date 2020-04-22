@@ -1,4 +1,3 @@
-function tasksController(methods, options) {
   var Task = require('../models/task.model.js');
   var Project = require('../models/project.model.js');
   var TaskReport = require('../models/memberTaskReport.model.js');
@@ -9,7 +8,7 @@ function tasksController(methods, options) {
   var moment = require('moment');
 
   //   *** Add new task *** Author: Shefin S
-  this.addTask = (req, res) => {
+  exports.addTask = (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
     var taskName = req.body.taskName;
@@ -17,6 +16,8 @@ function tasksController(methods, options) {
     var memberId = req.body.memberId
     var dueDate = req.body.dueDate;
     var description = req.body.description;
+    var files = req.files;
+    var documents = [];
     if (!taskName || !projectId || !dueDate || !description) {
       var errors = [];
       if (!taskName) {
@@ -49,6 +50,14 @@ function tasksController(methods, options) {
         errors: errors,
       });
     };
+    if (req.files.documents) {
+      var len = files.documents.length;
+      var i = 0;
+      while (i < len) {
+        documents.push(files.documents[i].filename);
+        i++;
+      }
+    }
     const newTask = new Task({
       projectId: projectId,
       memberId: memberId ? memberId : null,
@@ -57,6 +66,7 @@ function tasksController(methods, options) {
       description: description,
       taskCreatedBy: userId,
       isCompleted: false,
+      documents: documents || [],
       status: 1,
       tsCreatedAt: Number(moment().unix()),
       tsModifiedAt: null
@@ -80,7 +90,7 @@ function tasksController(methods, options) {
   };
 
   //   *** List added tasks  Author: Shefin S
-  this.listTask = async (req, res) => {
+  exports.listTask = async (req, res) => {
     var userData = req.identity.data;
     var userType = userData.type;
     var userId = userData.userId;
@@ -166,7 +176,7 @@ function tasksController(methods, options) {
 
   // *** List unassigned tasks ****  Author: Shefin S
 
-  this.listUnassignedTasks = async (req, res) => {
+  exports.listUnassignedTasks = async (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
     var params = req.query;
@@ -227,7 +237,7 @@ function tasksController(methods, options) {
   }
 
   // *** Get task details ***  Author: Shefin S
-  this.detailTask = async (req, res) => {
+  exports.detailTask = async (req, res) => {
     var userData = req.identity.data;
     var userType = userData.type;
     var userId = userData.userId;
@@ -307,7 +317,7 @@ function tasksController(methods, options) {
 
   // *** Submit task report for member *** Author: Shefin S
 
-  this.submitTaskReport = async (req, res) => {
+  exports.submitTaskReport = async (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
     var taskId = req.params.id;
@@ -395,7 +405,7 @@ function tasksController(methods, options) {
   };
 
   //   *** Delete tasks ***  Author: Shefin S
-  this.deleteTask = async (req, res) => {
+  exports.deleteTask = async (req, res) => {
     var taskId = req.params.id;
     var isValidId = ObjectId.isValid(taskId);
     if (!isValidId) {
@@ -438,7 +448,7 @@ function tasksController(methods, options) {
 
   //   *** Update Tasks ***  Author: Shefin S
 
-  this.updateTask = async (req, res) => {
+  exports.updateTask = async (req, res) => {
     var taskId = req.params.id;
     var taskName = req.body.taskName;
     var dueDate = req.body.dueDate;
@@ -477,7 +487,7 @@ function tasksController(methods, options) {
     if (projectId) {
       update.projectId = projectId;
     };
-    
+
     var filter = {
       _id: taskId,
       status: 1
@@ -501,7 +511,7 @@ function tasksController(methods, options) {
     }
   };
 
-  this.transferTask = async (req, res) => {
+  exports.transferTask = async (req, res) => {
     var taskId = req.params.id;
     var memberId = req.body.memberId;
     var isValidId = ObjectId.isValid(taskId);
@@ -560,6 +570,113 @@ function tasksController(methods, options) {
         message: err.message
       });
     }
-  }
-}
-module.exports = tasksController
+  };
+
+  // **** Append more files to array in a task ****  Author: Shefin S
+  exports.appendFilesArray = async (req, res) => {
+    var taskId = req.body.taskId;
+    var files = req.files;
+    var documents = [];
+    if (!files || !taskId) {
+      var errors = [];
+      if (!files) {
+        errors.push({
+          field: "files",
+          message: "files array cannot be empty"
+        });
+      }
+      if (!taskId) {
+        errors.push({
+          field: "taskId",
+          message: "taskId cannot be empty"
+        });
+      }
+      return res.send({
+        success: 0,
+        statusCode: 400,
+        errors: errors,
+      });
+    };
+    try {
+      if (req.files.documents) {
+        var len = files.documents.length;
+        var i = 0;
+        let promiseArr = [];
+        while (i < len) {
+          promiseArr.push(files.documents[i].filename);
+          documents.push(files.documents[i].filename);
+          let appendFilesArray = await Task.update({
+            _id: taskId
+          }, {
+            $push: {
+              documents: files.documents[i].filename
+            }
+          })
+          i++;
+        }
+        Promise.all(promiseArr)
+          .then((result) => res.send({
+            success: 1,
+            statusCode: 200,
+            message: 'More documents added successfully to the task'
+          }))
+          .catch((err) => res.send({
+            success: 0,
+            statusCode: 400,
+            message: err.message
+          }));
+      };
+
+    } catch (err) {
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
+    }
+  };
+  // **** Remove files from array in a task  ****  Author: Shefin S
+  exports.removeDocs = async (req, res) => {
+    var docIds = req.body.docIds;
+    var taskId = req.body.taskId;
+    if (!docIds || !taskId) {
+      var errors = [];
+      if (!docIds) {
+        errors.push({
+          field: "docIds",
+          message: "docIds array cannot be empty"
+        });
+      }
+      if (!taskId) {
+        errors.push({
+          field: "taskId",
+          message: "taskId cannot be empty"
+        });
+      }
+      return res.send({
+        success: 0,
+        statusCode: 400,
+        errors: errors,
+      });
+    };
+    try {
+      let removeDoc = await Task.update({
+        _id: taskId
+      }, {
+        $pullAll: {
+          documents: docIds
+        }
+      });
+      res.send({
+        success: 1,
+        statusCode: 200,
+        message: 'Selected documents removed successfully'
+      })
+    } catch (err) {
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
+    }
+  };

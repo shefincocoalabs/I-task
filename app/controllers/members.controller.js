@@ -1,4 +1,3 @@
-function memberController(methods, options) {
   var Member = require('../models/member.model.js');
   var Task = require('../models/task.model.js');
   var Project = require('../models/project.model.js');
@@ -8,7 +7,7 @@ function memberController(methods, options) {
   var ObjectId = require('mongoose').Types.ObjectId;
 
   //   **** Add a new member ****  Author: Shefin S
-  this.addMember = async (req, res) => {
+  exports.addMember = async (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
     var fullName = req.body.fullName;
@@ -16,6 +15,7 @@ function memberController(methods, options) {
     var phone = req.body.phone;
     var position = req.body.position;
     var password = req.body.password;
+    var image = req.file.filename;
     if (!fullName || !email || !phone || !position || !password) {
       var errors = [];
       if (!fullName) {
@@ -59,7 +59,7 @@ function memberController(methods, options) {
       fullName: fullName,
       email: email,
       phone: phone,
-      image: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png',
+      image: image,
       position: position,
       password: password,
       createdBy: userId,
@@ -96,7 +96,7 @@ function memberController(methods, options) {
 
   //   **** List-members ****  Author: Shefin S
 
-  this.listMember = async (req, res) => {
+  exports.listMember = async (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
     var params = req.query;
@@ -146,7 +146,7 @@ function memberController(methods, options) {
   };
 
   // *** Get personal info of a member ***  Author: Shefin S
-  this.personalInfo = async (req, res) => {
+  exports.personalInfo = async (req, res) => {
     var memberId = req.params.id;
     var isValidId = ObjectId.isValid(memberId);
     if (!isValidId) {
@@ -191,7 +191,7 @@ function memberController(methods, options) {
 
 // *** Add multiple tasks from existing unassigned tasks to the member ***  Author: Shefin S
 
-  this.addExisting = async (req, res) => {
+exports.addExisting = async (req, res) => {
     var memberId = req.body.memberId;
     var tasks = req.body.tasks;
     if (!memberId || !tasks) {
@@ -245,7 +245,7 @@ function memberController(methods, options) {
   }
 
   // *** List task of a member ***  Author: Shefin S
-  this.listTask = async (req, res) => {
+  exports.listTask = async (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
     var memberId = req.params.id;
@@ -318,7 +318,7 @@ function memberController(methods, options) {
 
   };
   //   **** Delete task for a member ****  Author: Shefin S
-  this.deleteTask = async (req, res) => {
+  exports.deleteTask = async (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
     var memberId = req.params.id;
@@ -360,7 +360,7 @@ function memberController(methods, options) {
 
   //   **** Update Task for member ****  Author: Shefin S
 
-  this.updateTask = async (req, res) => {
+  exports.updateTask = async (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
     var memberId = req.params.id;
@@ -414,7 +414,7 @@ function memberController(methods, options) {
     }
   };
 
-  this.listPositions = (req, res) => {
+  exports.listPositions = (req, res) => {
     var position = [];
     position.push({
       title: "Marketing Executive",
@@ -436,5 +436,4 @@ function memberController(methods, options) {
     })
   };
 
-}
-module.exports = memberController
+

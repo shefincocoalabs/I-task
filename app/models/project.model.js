@@ -34,6 +34,7 @@ const ProjectSchema = mongoose.Schema({
   isArchieved: Boolean,
   isCompleted : Boolean,
   completedDate: String,
+  documents: Array,
   status: Number,
   tsCreatedAt: Number,
   tsModifiedAt: Number

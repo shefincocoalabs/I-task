@@ -1,13 +1,32 @@
-module.exports = (app,methods,options) => {
-    const accounts = methods.loadController('accounts',options);
-    accounts.methods.post('/sign-up',accounts.signUp, {auth:false});
-    accounts.methods.post('/login',accounts.login, {auth:false});
-    accounts.methods.get('/profile',accounts.getProfile, {auth:true});
-    accounts.methods.patch('/update-profile',accounts.updateProfile, {auth:true});
-    accounts.methods.post('/send-otp',accounts.sendSms, {auth:false});
-    accounts.methods.post('/verify-otp',accounts.verifyOtp, {auth:false});
-    accounts.methods.patch('/reset-password',accounts.resetPasssword, {auth:false});
-    accounts.methods.patch('/change-password',accounts.changePasssword, {auth:true});
-    accounts.methods.post('/search',accounts.fullSearch, {auth:true});
-    accounts.methods.get('/filter-options',accounts.getFilterOptions, {auth:true});
-}
+const auth = require('../middleware/auth.js');
+var multer = require('multer');
+var crypto = require('crypto');
+var mime = require('mime-types');
+var config = require('../../config/app.config.js');
+
+var storage = multer.diskStorage({
+    destination: 'uploads/',
+    filename: function (req, file, cb) {
+        crypto.pseudoRandomBytes(16, function (err, raw) {
+            if (err) return cb(err)
+
+            cb(null, raw.toString('hex') + "." + mime.extension(file.mimetype))
+        })
+    }
+});
+var userImageUpload = multer({ storage: storage });
+module.exports = (app) => {
+    const accounts = require('../controllers/accounts.controller.js');
+    app.post('/accounts/sign-up', accounts.signUp);
+    app.post('/accounts/login', accounts.login);
+    app.get('/accounts/profile',auth, accounts.getProfile);
+    app.patch('/accounts/update-profile',auth,userImageUpload.single('image'), accounts.updateProfile);
+    app.post('/accounts/send-otp', accounts.sendSms);
+    app.post('/accounts/verify-otp', accounts.verifyOtp);
+    app.patch('/accounts/reset-password', accounts.resetPasssword);
+    app.patch('/accounts/change-password',auth, accounts.changePasssword);
+    app.post('/accounts/search',auth, accounts.fullSearch);
+    app.get('/accounts/filter-options',auth, accounts.getFilterOptions);
+};
+
+

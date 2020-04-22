@@ -1,4 +1,3 @@
-function projectController(methods, options) {
   var Project = require('../models/project.model.js');
   var Members = require('../models/member.model.js');
   var Task = require('../models/task.model.js');
@@ -8,13 +7,15 @@ function projectController(methods, options) {
   var projectsConfig = config.projects;
 
   //   *** Create Project *** Author: Shefin S
-  this.addProject = async (req, res) => {
+  exports.addProject = async (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
     var projectName = req.body.projectName;
     var dueDate = req.body.dueDate;
     var description = req.body.description;
+    var files = req.files;
     var projectCode;
+    var documents = [];
     if (!projectName || !dueDate || !description) {
       var errors = [];
       if (!dueDate) {
@@ -50,6 +51,14 @@ function projectController(methods, options) {
       } else {
         projectCode = 'P' + projectsCount;
       }
+      if (req.files.documents) {
+        var len = files.documents.length;
+        var i = 0;
+        while (i < len) {
+          documents.push(files.documents[i].filename);
+          i++;
+        }
+      }
       const newProject = new Project({
         projectCode: projectCode,
         projectName: projectName,
@@ -59,6 +68,7 @@ function projectController(methods, options) {
         isCompleted: false,
         completedDate: "",
         isArchieved: false,
+        documents: documents || [],
         status: 1,
         tsCreatedAt: Number(moment().unix()),
         tsModifiedAt: null
@@ -80,7 +90,7 @@ function projectController(methods, options) {
   };
 
   // **** List Projects **** Author: Shefin S
-  this.listProject = async (req, res) => {
+  exports.listProject = async (req, res) => {
     var userData = req.identity.data;
     var userType = userData.type;
     var userId = userData.userId;
@@ -231,7 +241,7 @@ function projectController(methods, options) {
   };
 
   //   **** Get project detail **** Author: Shefin S
-  this.getProjectDetail = async (req, res) => {
+  exports.getProjectDetail = async (req, res) => {
     var userData = req.identity.data;
     var userType = userData.type;
     var userId = userData.userId;
@@ -319,7 +329,7 @@ function projectController(methods, options) {
 
   // *** Api for archieving a project ****  Author: Shefin S
 
-  this.archieveProject = async (req, res) => {
+  exports.archieveProject = async (req, res) => {
     var userData = req.identity.data;
     var userType = userData.type;
     var userId = userData.userId;
@@ -361,7 +371,7 @@ function projectController(methods, options) {
 
   // *** Update Project Details ****   Author: Shefin S
 
-  this.editProject = async (req, res) => {
+  exports.editProject = async (req, res) => {
     var projectId = req.params.id;
     var projectName = req.body.taskName;
     var dueDate = req.body.dueDate;
@@ -417,6 +427,114 @@ function projectController(methods, options) {
         message: err.message
       });
     }
-  }
-}
-module.exports = projectController
+  };
+
+  // **** Append more files to array in a project ****  Author: Shefin S
+  exports.appendFilesArray = async (req, res) => {
+    var projectId = req.body.projectId;
+    var files = req.files;
+    var documents = [];
+    if (!files || !projectId) {
+      var errors = [];
+      if (!files) {
+        errors.push({
+          field: "files",
+          message: "files array cannot be empty"
+        });
+      }
+      if (!projectId) {
+        errors.push({
+          field: "projectId",
+          message: "projectId cannot be empty"
+        });
+      }
+      return res.send({
+        success: 0,
+        statusCode: 400,
+        errors: errors,
+      });
+    };
+    try {
+      if (req.files.documents) {
+        var len = files.documents.length;
+        var i = 0;
+        let promiseArr = [];
+        while (i < len) {
+          promiseArr.push(files.documents[i].filename);
+          documents.push(files.documents[i].filename);
+          let appendFilesArray = await Project.update({
+            _id: projectId
+          }, {
+            $push: {
+              documents: files.documents[i].filename
+            }
+          })
+          i++;
+        }
+        Promise.all(promiseArr)
+          .then((result) => res.send({
+            success: 1,
+            statusCode: 200,
+            message: 'More documents added successfully to the project'
+          }))
+          .catch((err) => res.send({
+            success: 0,
+            statusCode: 400,
+            message: err.message
+          }));
+      };
+
+    } catch (err) {
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
+    }
+  };
+
+  // **** Remove files from array in a project  ****  Author: Shefin S
+  exports.removeDocs = async (req, res) => {
+    var docIds = req.body.docIds;
+    var projectId = req.body.projectId;
+    if (!docIds || !projectId) {
+      var errors = [];
+      if (!docIds) {
+        errors.push({
+          field: "docIds",
+          message: "docIds array cannot be empty"
+        });
+      }
+      if (!projectId) {
+        errors.push({
+          field: "projectId",
+          message: "projectId cannot be empty"
+        });
+      }
+      return res.send({
+        success: 0,
+        statusCode: 400,
+        errors: errors,
+      });
+    };
+    try {
+      let removeDoc = await Project.update({
+        _id: projectId
+      }, {
+        $pullAll: {
+          documents: docIds
+        }
+      });
+      res.send({
+        success: 1,
+        statusCode: 200,
+        message: 'Selected documents removed successfully'
+      })
+    } catch (err) {
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
+    }
+  };

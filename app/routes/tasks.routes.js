@@ -1,12 +1,30 @@
-module.exports = (app,methods,options) => {
-    const tasks = methods.loadController('tasks',options);
-    tasks.methods.post('/create',tasks.addTask, {auth:true});
-    tasks.methods.get('/list',tasks.listTask, {auth:true});
-    tasks.methods.get('/list-unassigned',tasks.listUnassignedTasks, {auth:true});
-    tasks.methods.get('/detail/:id',tasks.detailTask, {auth:true});
-    tasks.methods.post('/submit-report/:id',tasks.submitTaskReport, {auth:true});
-    tasks.methods.delete('/delete/:id',tasks.deleteTask, {auth:true});
-    tasks.methods.patch('/update/:id',tasks.updateTask, {auth:true});
-    tasks.methods.patch('/transfer/:id',tasks.transferTask, {auth:true});
-    
-}
+const auth = require('../middleware/auth.js');
+var multer = require('multer');
+var crypto = require('crypto');
+var mime = require('mime-types');
+var config = require('../../config/app.config.js');
+
+var storage = multer.diskStorage({
+    destination: 'uploads/',
+    filename: function (req, file, cb) {
+        crypto.pseudoRandomBytes(16, function (err, raw) {
+            if (err) return cb(err)
+
+            cb(null, raw.toString('hex') + "." + mime.extension(file.mimetype))
+        })
+    }
+});
+var fileUpload = multer({ storage: storage });
+module.exports = (app) => {
+    const tasks = require('../controllers/tasks.controller.js');
+    app.post('/tasks/create',auth, fileUpload.fields([{ name: 'documents', maxCount: 5 }]), tasks.addTask);
+    app.get('/tasks/list',auth, tasks.listTask);
+    app.get('/tasks/list-unassigned',auth, tasks.listUnassignedTasks);
+    app.get('/tasks/detail/:id',auth, tasks.detailTask);
+    app.post('/tasks/submit-report/:id',auth, tasks.submitTaskReport);
+    app.delete('/tasks/delete/:id',auth, tasks.deleteTask);
+    app.patch('/tasks/update/:id',auth, tasks.updateTask);
+    app.patch('/tasks/transfer/:id',auth, tasks.transferTask);
+    app.post('/tasks/add-more',auth,fileUpload.fields([{ name: 'documents', maxCount: 5 }]), tasks.appendFilesArray);
+    app.patch('/tasks/remove-doc',auth,tasks.removeDocs)
+};
