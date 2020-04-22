@@ -724,9 +724,11 @@ function accountsController(methods, options) {
           searchResult = await Task.find(findCriteriaTasks, {
               taskName: 1,
               dueDate: 1,
+              memberId: 1,
+              projectId: 1,
               isCompleted: 1,
               completedDate: 1,
-            }, pageParams)
+            }, pageParams)      
             .populate([{
                 path: 'memberId',
                 select: 'fullName image position'
@@ -736,8 +738,8 @@ function accountsController(methods, options) {
                 select: 'projectName dueDate'
               }
             ])
-            .lean();
-        
+            
+
           itemsCount = await Task.countDocuments(findCriteriaTasks);
         }
         var totalPages = itemsCount / perPage;
