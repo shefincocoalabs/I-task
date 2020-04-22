@@ -118,7 +118,8 @@ function tasksController(methods, options) {
       completedDate: 1
     };
     var filterMemberTasks = {
-      memberId: userId
+      memberId: userId,
+      status: 1
     };
     try {
       if (userType == 'Admin') {
