@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken')
 const User = require('../models/user.model.js');
+const Member  = require('../models/member.model.js');
 const paramsConfig = require('../../config/params.config');
 const JWT_KEY = paramsConfig.development.jwt.secret;
 
@@ -8,14 +9,26 @@ const auth = async(req, res, next) => {
         const token = req.header('Authorization').replace('Bearer ', '')
         const userDetails = jwt.verify(token, JWT_KEY);
         const data = userDetails.data;
-        const userId = data.userId;
-        const user = await User.findOne({ _id: userId });
-        if (!user) {
-            throw new Error()
-        }
-        req.identity = userDetails;
-        req.token = token;
-        next()
+        if(data.type == 'Admin') {
+            const userId = data.userId;
+            const user = await User.findOne({ _id: userId });
+            if (!user) {
+                throw new Error()
+            }
+            req.identity = userDetails;
+            req.token = token;
+            next()
+        }else {
+            const userId = data.userId;
+            const user = await Member.findOne({ _id: userId });
+            if (!user) {
+                throw new Error()
+            }
+            req.identity = userDetails;
+            req.token = token;
+            next()
+        }       
+       
     } catch (error) {
         res.status(401).send({ error: 'Not authorized to access this resource' })
     }
