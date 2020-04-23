@@ -299,7 +299,7 @@
         res.send({
           success: 1,
           statusCode: 200,
-          taskDetail: memberTaskDetail,
+          taskDetails: memberTaskDetail,
           message: 'Task detail fetched successfully'
         });
 
