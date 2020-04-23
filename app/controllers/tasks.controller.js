@@ -258,6 +258,7 @@
       status: 1
     };
     var filterMemberTasks = {
+      _id: taskId,
       memberId: userId,
       status: 1
     };
