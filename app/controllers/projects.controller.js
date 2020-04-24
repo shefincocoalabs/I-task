@@ -439,8 +439,6 @@
   exports.appendFilesArray = async (req, res) => {
     var projectId = req.body.projectId;
     var files = req.files;
-    console.log('files');
-    console.log(files);
     var documents = [];
     if (!files || !projectId) {
       var errors = [];
