@@ -307,7 +307,7 @@
     if (position) {
       update.position = position;
     };
-    if(profileImage) {
+    if (profileImage) {
       update.image = profileImage.filename;
     }
     var filter = {
@@ -622,12 +622,12 @@
     var type = req.query.type;
     var filter = req.query.filter;
     var search = req.query.searchKeyword || '.*';
+    var projectId = req.query.projectId;
     var findCriteriaTasks;
     var findCriteriaProject;
     var findCriteriaMembers;
     var searchResult;
     var itemsCount;
-    var i;
     search = search + '.*';
     var params = req.query;
     var page = params.page || 1;
@@ -728,7 +728,7 @@
               projectId: 1,
               isCompleted: 1,
               completedDate: 1,
-            }, pageParams)      
+            }, pageParams)
             .populate([{
                 path: 'memberId',
                 select: 'fullName image position'
@@ -738,7 +738,6 @@
                 select: 'projectName dueDate'
               }
             ])
-            
 
           itemsCount = await Task.countDocuments(findCriteriaTasks);
         }
@@ -775,7 +774,6 @@
           }
         })
       }
-
     } catch (err) {
       res.send({
         success: 0,
@@ -821,18 +819,17 @@
   };
 
 
-function getProjectList(reqObj, callback) {
-  let bearer = reqObj.bearer;
-  let url = reqObj.url;
-  delete reqObj.bearer;
-  delete reqObj.url;
-  gateway.getWithAuth(url, reqObj, bearer, function (err, result) {
-    if (err) {
-      console.log("Error while project list..." + url);
+  function getProjectList(reqObj, callback) {
+    let bearer = reqObj.bearer;
+    let url = reqObj.url;
+    delete reqObj.bearer;
+    delete reqObj.url;
+    gateway.getWithAuth(url, reqObj, bearer, function (err, result) {
+      if (err) {
+        console.log("Error while project list..." + url);
 
-    }
-    callback(err, result);
-  });
+      }
+      callback(err, result);
+    });
 
-};
-
+  };

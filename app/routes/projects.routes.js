@@ -3,9 +3,10 @@ var multer = require('multer');
 var crypto = require('crypto');
 var mime = require('mime-types');
 var config = require('../../config/app.config.js');
+var projectsConfig = config.projects;
 
 var storage = multer.diskStorage({
-    destination: 'uploads/',
+    destination: projectsConfig.documentsUploadPath,
     filename: function (req, file, cb) {
         crypto.pseudoRandomBytes(16, function (err, raw) {
             if (err) return cb(err)

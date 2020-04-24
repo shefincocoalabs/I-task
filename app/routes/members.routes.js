@@ -3,9 +3,9 @@ var multer = require('multer');
 var crypto = require('crypto');
 var mime = require('mime-types');
 var config = require('../../config/app.config.js');
-
+var membersConfig = config.members;
 var storage = multer.diskStorage({
-    destination: 'uploads/',
+    destination: membersConfig.imageUploadPath,
     filename: function (req, file, cb) {
         crypto.pseudoRandomBytes(16, function (err, raw) {
             if (err) return cb(err)
