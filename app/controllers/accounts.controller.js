@@ -171,7 +171,8 @@
           phone: user.phone,
           position: '',
           type: 'Admin',
-          image: ''
+          image: user.image,
+          imageBase: userConfig.imageBase
         };
         var token = jwt.sign({
           data: payload,
@@ -197,7 +198,8 @@
           phone: user.phone,
           position: '',
           type: 'Member',
-          image: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
+          image: user.image,
+          imageBase: userConfig.imageBase
         };
         var token = jwt.sign({
           data: payload,
@@ -284,6 +286,7 @@
 
   exports.updateProfile = async (req, res) => {
     var userData = req.identity.data;
+    var userType = userData.type;
     var userId = userData.userId;
     var fullName = req.body.fullName;
     var email = req.body.email;
@@ -314,10 +317,15 @@
       update.image = profileImage.filename;
     }
     var filter = {
-      _id: userId
+      _id: userId,
+      status: 1
     };
     try {
-      var updateUser = await Users.update(filter, update);
+      if (userType == 'Admin') {
+        var updateUser = await Users.update(filter, update);
+      } else {
+        var updateMember = await Members.update(filter, update)
+      }
       res.send({
         success: 1,
         statusCode: 200,
