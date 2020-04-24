@@ -171,7 +171,7 @@
           phone: user.phone,
           position: '',
           type: 'Admin',
-          image: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
+          image: ''
         };
         var token = jwt.sign({
           data: payload,
@@ -228,7 +228,8 @@
       fullName: 1,
       email: 1,
       phone: 1,
-      position: 1
+      position: 1,
+      image: 1
     };
     var userDetails = {};
     try {
@@ -244,10 +245,10 @@
         userDetails.position = profileData.position;
         userDetails.type = userType
         userDetails.image = profileData.image;
+        userDetails.imageBase = userConfig.imageBase
         res.send({
           success: 1,
           statusCode: 200,
-          imageBase: userConfig.imageBase,
           userDetails: userDetails,
           message: 'Profile data fetched successfully'
         });
