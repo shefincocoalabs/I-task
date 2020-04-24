@@ -4,6 +4,7 @@
   var Member = require('../models/member.model.js');
   var config = require('../../config/app.config.js');
   var ObjectId = require('mongoose').Types.ObjectId;
+  var memberConfig = config.members;
   var tasksConfig = config.tasks;
   var moment = require('moment');
 
@@ -269,7 +270,8 @@
       isCompleted: 1,
       completedDate: 1,
       projectId: 1,
-      memberId: 1
+      memberId: 1,
+      documents: 1
     };
     try {
       if (userType == 'Admin') {
@@ -286,6 +288,8 @@
         res.send({
           success: 1,
           statusCode: 200,
+          fileBase: tasksConfig.fileBase,
+          imageBase: memberConfig.imageBase,
           taskDetails: taskDetail,
           message: 'Task detail fetched successfully'
         });
@@ -511,6 +515,8 @@
       });
     }
   };
+
+// *** Transfer task to a member ***  Author: Shefin S
 
   exports.transferTask = async (req, res) => {
     var taskId = req.params.id;

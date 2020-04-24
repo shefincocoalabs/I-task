@@ -3,8 +3,10 @@
   var Task = require('../models/task.model.js');
   var moment = require('moment');
   var config = require('../../config/app.config.js');
-  var ObjectId = require('mongoose').Types.ObjectId;
+  var membersConfig = config.members;
   var projectsConfig = config.projects;
+  var ObjectId = require('mongoose').Types.ObjectId;
+  
 
   //   *** Create Project *** Author: Shefin S
   exports.addProject = async (req, res) => {
@@ -267,7 +269,8 @@
       description: 1,
       isArchieved: 1,
       isCompleted: 1,
-      completedDate: 1
+      completedDate: 1,
+      documents: 1
     };
     var taskQueryProjection = {
       taskName: 1,
@@ -309,11 +312,14 @@
       projectDetails.isArchieved = projectData.isArchieved;
       projectDetails.isCompleted = projectData.isCompleted;
       projectDetails.completedDate = projectData.completedDate;
+      projectDetails.documents = projectData.documents;
       projectDetails.members = items;
       projectDetails.membersTask = projectMembersTasks;
       res.send({
         success: 1,
         statusCode: 200,
+        fileBase: projectsConfig.fileBase,
+        imageBase: membersConfig.imageBase,
         projectDetails: projectDetails,
         message: 'Project details fetched successfully'
       })
