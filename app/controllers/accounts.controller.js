@@ -5,6 +5,7 @@
   var Project = require('../models/project.model.js');
   var Otp = require('../models/otp.model.js');
   var config = require('../../config/app.config.js');
+  var userConfig = config.users;
   var projectsConfig = config.projects;
   var otpConfig = config.otp;
   const paramsConfig = require('../../config/params.config');
@@ -242,10 +243,11 @@
         userDetails.phone = profileData.phone;
         userDetails.position = profileData.position;
         userDetails.type = userType
-        userDetails.image = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
+        userDetails.image = profileData.image;
         res.send({
           success: 1,
           statusCode: 200,
+          imageBase: userConfig.imageBase,
           userDetails: userDetails,
           message: 'Profile data fetched successfully'
         });
@@ -259,8 +261,8 @@
         userDetails.email = profileData.email;
         userDetails.phone = profileData.phone;
         userDetails.position = profileData.position;
-        userDetails.type = userType
-        userDetails.image = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
+        userDetails.type = userType;
+        userDetails.image = profileData.image;
         res.send({
           success: 1,
           statusCode: 200,

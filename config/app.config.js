@@ -7,6 +7,7 @@ module.exports = {
     expirySeconds: 2 * 60
   },
   users: {
+    imageBase: commonStorePath + 'images/profile-images/',
     imageUploadPath: '/var/www/html/I-task/images/profile-images/'
   },
   members: {
