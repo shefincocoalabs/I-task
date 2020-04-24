@@ -440,7 +440,7 @@
     var projectId = req.body.projectId;
     var files = req.files;
     console.log('files');
-    console(files);
+    console.log(files);
     var documents = [];
     if (!files || !projectId) {
       var errors = [];
