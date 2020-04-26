@@ -657,140 +657,162 @@
         message: 'Type cannot be empty'
       })
     };
-    var findCriteriaProject = {};
-    var findCriteriaTasks = {};
-    var findCriteriaMembers = {};
-    if (filter) {
-      if (filter == 'Archieved') {
-        findCriteriaProject.isArchieved = true;
+    if (projectId) {
+      let seperateListReqObj = {
+        projectId,
+        type,
+        search,
+        page,
+        perPage,
+        userType,
+        bearer,
+        url: '/projects/helper',
       };
-      if (filter == 'Completed') {
-        findCriteriaProject.isCompleted = true;
-        findCriteriaTasks.isCompleted = true;
-      };
-      if (filter == 'Pending') {
-        findCriteriaProject.isCompleted = false;
-        findCriteriaTasks.isCompleted = false;
-      };
-    };
-
-    if (userType == 'Admin') {
-      // Tasks findcriteria using searchKeyword and filter
-      findCriteriaTasks.taskName = {
-        $regex: search,
-        $options: 'i'
-      };
-      findCriteriaTasks.taskCreatedBy = userId;
-      findCriteriaTasks.status = 1;
-
-      // Project findcriteria using searchKeyword and filter
-      findCriteriaProject.projectName = {
-        $regex: search,
-        $options: 'i'
-      };
-      findCriteriaProject.projectCreatedBy = userId;
-      findCriteriaProject.status = 1;
-
-      findCriteriaMembers = {
-        $or: [{
-          fullName: {
-            $regex: search,
-            $options: 'i',
-          }
-        }, {
-          email: {
-            $regex: search,
-            $options: 'i'
-          }
-        }],
-        createdBy: userId,
-        status: 1
-      };
-    } else {
-      // Tasks findcriteria using searchKeyword and filter
-      findCriteriaTasks.taskName = {
-        $regex: search,
-        $options: 'i'
-      };
-      findCriteriaTasks.memberId = userId;
-      findCriteriaTasks.status = 1;
-      // Projects findcriteria using searchKeyword and filter
-      findCriteriaProject.projectName = {
-        $regex: search,
-        $options: 'i'
-      };
-      findCriteriaProject.memberId = userId;
-      findCriteriaProject.status = 1;
-    }
-    try {
-      if (type == 'Members' || type == 'Tasks') {
-        if (type == 'Members') {
-          searchResult = await Members.find(findCriteriaMembers, {
-            fullName: 1,
-            image: 1,
-            position: 1
-          }, pageParams);
-          itemsCount = await Members.countDocuments(findCriteriaMembers);
-        } else if (type == 'Tasks') {
-          searchResult = await Task.find(findCriteriaTasks, {
-              taskName: 1,
-              dueDate: 1,
-              memberId: 1,
-              projectId: 1,
-              isCompleted: 1,
-              completedDate: 1,
-            }, pageParams)
-            .populate([{
-                path: 'memberId',
-                select: 'fullName image position'
-              },
-              {
-                path: 'projectId',
-                select: 'projectName dueDate'
-              }
-            ])
-
-          itemsCount = await Task.countDocuments(findCriteriaTasks);
-        }
-        var totalPages = itemsCount / perPage;
-        totalPages = Math.ceil(totalPages);
-        var hasNextPage = page < totalPages;
-        res.send({
-          success: 1,
-          statusCode: 200,
-          items: searchResult,
-          page: page,
-          perPage: perPage,
-          hasNextPage: hasNextPage,
-          totalItems: itemsCount,
-          totalPages: totalPages,
-          message: 'Search results listed successfully'
-        })
-      } else {
-        let prokectListReqObj = {
-          findCriteriaProject,
-          page,
-          perPage,
-          userType,
-          bearer,
-          url: '/projects/list',
+      getSeperateList(seperateListReqObj, function (err, result) {
+        var searchedProj = {
+          items: []
         };
-        getProjectList(prokectListReqObj, function (err, result) {
-          var searchedProj = {
-            items: []
-          };
-          if (!err) {
-            searchedProj = JSON.parse(result);
-            res.send(searchedProj);
-          }
-        })
+        if (!err) {
+          searchedProj = JSON.parse(result);
+          res.send(searchedProj);
+        }
+      })
+    } else {
+      var findCriteriaProject = {};
+      var findCriteriaTasks = {};
+      var findCriteriaMembers = {};
+      if (filter) {
+        if (filter == 'Archieved') {
+          findCriteriaProject.isArchieved = true;
+        };
+        if (filter == 'Completed') {
+          findCriteriaProject.isCompleted = true;
+          findCriteriaTasks.isCompleted = true;
+        };
+        if (filter == 'Pending') {
+          findCriteriaProject.isCompleted = false;
+          findCriteriaTasks.isCompleted = false;
+        };
+      };
+
+      if (userType == 'Admin') {
+        // Tasks findcriteria using searchKeyword and filter
+        findCriteriaTasks.taskName = {
+          $regex: search,
+          $options: 'i'
+        };
+        findCriteriaTasks.taskCreatedBy = userId;
+        findCriteriaTasks.status = 1;
+
+        // Project findcriteria using searchKeyword and filter
+        findCriteriaProject.projectName = {
+          $regex: search,
+          $options: 'i'
+        };
+        findCriteriaProject.projectCreatedBy = userId;
+        findCriteriaProject.status = 1;
+
+        findCriteriaMembers = {
+          $or: [{
+            fullName: {
+              $regex: search,
+              $options: 'i',
+            }
+          }, {
+            email: {
+              $regex: search,
+              $options: 'i'
+            }
+          }],
+          createdBy: userId,
+          status: 1
+        };
+      } else {
+        // Tasks findcriteria using searchKeyword and filter
+        findCriteriaTasks.taskName = {
+          $regex: search,
+          $options: 'i'
+        };
+        findCriteriaTasks.memberId = userId;
+        findCriteriaTasks.status = 1;
+        // Projects findcriteria using searchKeyword and filter
+        findCriteriaProject.projectName = {
+          $regex: search,
+          $options: 'i'
+        };
+        findCriteriaProject.memberId = userId;
+        findCriteriaProject.status = 1;
       }
-    } catch (err) {
-      res.send({
-        success: 0,
-        statusCode: 500,
-        message: err.message
-      });
+      try {
+        if (type == 'Members' || type == 'Tasks') {
+          if (type == 'Members') {
+            searchResult = await Members.find(findCriteriaMembers, {
+              fullName: 1,
+              image: 1,
+              position: 1
+            }, pageParams);
+            itemsCount = await Members.countDocuments(findCriteriaMembers);
+          } else if (type == 'Tasks') {
+            searchResult = await Task.find(findCriteriaTasks, {
+                taskName: 1,
+                dueDate: 1,
+                memberId: 1,
+                projectId: 1,
+                isCompleted: 1,
+                completedDate: 1,
+              }, pageParams)
+              .populate([{
+                  path: 'memberId',
+                  select: 'fullName image position'
+                },
+                {
+                  path: 'projectId',
+                  select: 'projectName dueDate'
+                }
+              ])
+
+            itemsCount = await Task.countDocuments(findCriteriaTasks);
+          }
+          var totalPages = itemsCount / perPage;
+          totalPages = Math.ceil(totalPages);
+          var hasNextPage = page < totalPages;
+          res.send({
+            success: 1,
+            statusCode: 200,
+            items: searchResult,
+            page: page,
+            perPage: perPage,
+            hasNextPage: hasNextPage,
+            totalItems: itemsCount,
+            totalPages: totalPages,
+            message: 'Search results listed successfully'
+          })
+        } else {
+          let projectListReqObj = {
+            findCriteriaProject,
+            page,
+            perPage,
+            userType,
+            bearer,
+            url: '/projects/list',
+          };
+          getProjectList(projectListReqObj, function (err, result) {
+            var searchedProj = {
+              items: []
+            };
+            if (!err) {
+              searchedProj = JSON.parse(result);
+              res.send(searchedProj);
+            }
+          })
+        }
+      } catch (err) {
+        res.send({
+          success: 0,
+          statusCode: 500,
+          message: err.message
+        });
+      }
     }
   };
 
@@ -842,5 +864,18 @@
       }
       callback(err, result);
     });
-
   };
+
+  function getSeperateList(reqObj, callback) {
+    let bearer = reqObj.bearer;
+    let url = reqObj.url;
+    delete reqObj.bearer;
+    delete reqObj.url;
+    gateway.getWithAuth(url, reqObj, bearer, function (err, result) {
+      if (err) {
+        console.log("Error while fetching seperate list..." + url);
+
+      }
+      callback(err, result);
+    });
+  }

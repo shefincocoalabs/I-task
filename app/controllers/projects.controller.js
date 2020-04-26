@@ -6,7 +6,8 @@
   var membersConfig = config.members;
   var projectsConfig = config.projects;
   var ObjectId = require('mongoose').Types.ObjectId;
-  
+  var gateway = require('../components/gateway.component.js');
+
 
   //   *** Create Project *** Author: Shefin S
   exports.addProject = async (req, res) => {
@@ -93,6 +94,7 @@
 
   // **** List Projects **** Author: Shefin S
   exports.listProject = async (req, res) => {
+    var bearer = req.headers['authorization'];
     var userData = req.identity.data;
     var userType = userData.type;
     var userId = userData.userId;
@@ -175,63 +177,23 @@
             message: err.message
           }));
       } else {
-        let listProjectMemberData = await Task.find({
-          memberId: userId,
-          status: 1
-        }, {}, pageParams).limit(perPage).populate({
-          path: 'projectId',
-          select: 'projectName dueDate projectCode completedDate isCompleted isArchieved'
-        }).lean();
-        let countProjectMemberData = await Task.countDocuments({
-          memberId: userId,
-          status: 1
-        });
-        var totalPages = countProjectMemberData / perPage;
-        totalPages = Math.ceil(totalPages);
-        var hasNextPage = page < totalPages;
-        let promiseArr = [];
-        let memberDetailsArray = [];
-        for (i = 0; i < listProjectMemberData.length; i++) {
-          var memberProjectDetails = {};
-          projectId = listProjectMemberData[i].projectId._id;
-          let countTasks = await Task.countDocuments({
-            projectId: projectId,
-            status: 1
-          });
-          let countMembers = await (await Task.distinct('memberId', {
-            projectId: projectId,
-            status: 1
-          })).length;
-          memberProjectDetails.id = listProjectMemberData[i].projectId._id;
-          memberProjectDetails.projectName = listProjectMemberData[i].projectId.projectName;
-          memberProjectDetails.projectCode = listProjectMemberData[i].projectId.projectCode;
-          memberProjectDetails.dueDate = listProjectMemberData[i].projectId.dueDate;
-          memberProjectDetails.isCompleted = listProjectMemberData[i].projectId.isCompleted;
-          memberProjectDetails.completedDate = listProjectMemberData[i].projectId.completedDate;
-          memberProjectDetails.taskCount = countTasks;
-          memberProjectDetails.membersCount = countMembers;
-          promiseArr.push(listProjectMemberData[i]);
-          memberDetailsArray.push(memberProjectDetails);
+        let projectListReqObj = {
+          page,
+          perPage,
+          userId,
+          filters,
+          bearer,
+          url: '/projects/membersProjectData',
         };
-        //now execute promise all
-        Promise.all(promiseArr)
-          .then((result) =>
-            res.send({
-              success: 1,
-              statusCode: 200,
-              items: memberDetailsArray,
-              page: page,
-              perPage: perPage,
-              hasNextPage: hasNextPage,
-              totalItems: countProjectMemberData,
-              totalPages: totalPages,
-              message: 'Project listed successfully'
-            }))
-          .catch((err) => res.send({
-            success: 0,
-            statusCode: 400,
-            message: err.message
-          }));
+        getMembersProjectList(projectListReqObj, function (err, result) {
+          var searchedProj = {
+            items: []
+          };
+          if (!err) {
+            searchedProj = JSON.parse(result);
+            res.send(searchedProj);
+          }
+        })
       }
     } catch (err) {
       res.send({
@@ -277,7 +239,7 @@
       dueDate: 1,
       isCompleted: 1,
       completedDate: 1
-    }
+    };
     try {
       let projectData = await Project.findOne(filter, queryProjection);
       let projectId = projectData._id;
@@ -287,14 +249,14 @@
       }, taskQueryProjection).populate({
         path: 'memberId',
         select: 'fullName image position'
-      });
+      }).limit(3)
       let projectMembers = await Task.find({
         projectId: projectId,
         status: 1
       }, taskQueryProjection).populate({
         path: 'memberId',
         select: 'fullName image position'
-      }).lean();
+      }).lean().limit(3)
       let items = [];
       for (let i = 0; i < projectMembers.length; i++) {
         var projectMembersData = {};
@@ -543,4 +505,252 @@
         message: err.message
       });
     }
+  };
+
+  // *** Api for listing project members list and project task list for a project ***  Author: Shefin S
+  // This api is called using super agent in project details api
+  exports.helperApi = async (req, res) => {
+    var projectId = req.query.projectId;
+    var search = req.query.search || '.*';
+    search = search + '.*';
+    var type = req.query.type;
+    var page = req.query.page;
+    var perPage = req.query.perPage;
+    var offset = (page - 1) * perPage;
+    var pageParams = {
+      skip: offset,
+      limit: perPage
+    };
+    var searchObj = {};
+    if (type == 'Members') {
+      searchObj.$match = {
+        "memberId.fullName": {
+          $regex: search,
+          $options: 'i',
+        }
+      }
+    } else {
+      searchObj.$match = {
+        taskName: {
+          $regex: search,
+          $options: 'i',
+        }
+      }
+    }
+    let projectMembers = await Task.aggregate([{
+        $match: {
+          projectId: ObjectId(projectId),
+          status: 1
+        }
+      },
+      {
+        $lookup: {
+          from: "Members",
+          localField: "memberId",
+          foreignField: "_id",
+          as: "member"
+        }
+      },
+      {
+        $unwind: "$member"
+      },
+      searchObj,
+      {
+        $project: {
+          taskName: 1,
+          dueDate: 1,
+          isCompleted: 1,
+          completedDate: 1,
+          "member._id": 1,
+          "member.fullName": 1,
+          "member.image": 1,
+          "member.position": 1,
+        }
+      },
+      {
+        $skip: parseInt(pageParams.skip)
+      },
+      {
+        $limit: parseInt(pageParams.limit)
+      }
+    ]);
+    let itemsCount = await Task.countDocuments({
+      projectId: projectId,
+      status: 1
+    });
+    var totalPages = itemsCount / perPage;
+    totalPages = Math.ceil(totalPages);
+    var hasNextPage = page < totalPages;
+    let items = [];
+    for (let i = 0; i < projectMembers.length; i++) {
+      var projectMembersData = {};
+      projectMembersData.id = projectMembers[i].member._id;
+      projectMembersData.memberName = projectMembers[i].member.fullName;
+      projectMembersData.image = projectMembers[i].member.image;
+      projectMembersData.position = projectMembers[i].member.position;
+      items.push(projectMembersData);
+    };
+    let data = [];
+    for (let j = 0; j < projectMembers.length; j++) {
+      var projectTasksData = {};
+      projectTasksData.members = {}
+      projectTasksData.id = projectMembers[j]._id;
+      projectTasksData.taskName = projectMembers[j].taskName;
+      projectTasksData.dueDate = projectMembers[j].dueDate;
+      projectTasksData.isCompleted = projectMembers[j].isCompleted;
+      projectTasksData.completedDate = projectMembers[j].completedDate;
+      projectTasksData.members.id = projectMembers[j].member._id;
+      projectTasksData.members.fullName = projectMembers[j].member.fullName;
+      projectTasksData.members.position = projectMembers[j].member.position;
+      projectTasksData.members.image = projectMembers[j].member.image;
+      data.push(projectTasksData);
+    }
+    if (type == 'Members') {
+      res.send({
+        success: 1,
+        statusCode: 200,
+        members: items,
+        page: page,
+        perPage: perPage,
+        hasNextPage: hasNextPage,
+        totalItems: itemsCount,
+        totalPages: totalPages,
+        message: 'Project members listed successfully'
+      })
+    } else {
+      res.send({
+        success: 1,
+        statusCode: 200,
+        memberTasks: data,
+        page: page,
+        perPage: perPage,
+        hasNextPage: hasNextPage,
+        totalItems: itemsCount,
+        message: 'Project tasks listed successfully'
+      })
+    }
+  };
+
+  // *** Api for listing members  projects list ***  Author: Shefin S
+  // This api is called using superagent in search api in Accounts controller
+  exports.membersProjectData = async (req, res) => {
+    var userId = req.query.userId;
+    var search = req.query.search || '.*';
+    search = search + '.*';
+    var projectId;
+    var page = req.query.page;
+    var perPage = req.query.perPage;
+    var offset = (page - 1) * perPage;
+    var pageParams = {
+      skip: offset,
+      limit: perPage
+    };
+    let listProjectMemberData = await Task.aggregate([{
+        $match: {
+          memberId: ObjectId(userId),
+          status: 1
+        }
+      },
+      {
+        $lookup: {
+          from: "Projects",
+          localField: "projectId",
+          foreignField: "_id",
+          as: "Projects"
+        }
+      },
+      {
+        $unwind: "$Projects"
+      },
+      {
+        $project: {
+          "Projects._id": 1,
+          "Projects.projectName": 1,
+          "Projects.projectCode": 1,
+          "Projects.dueDate": 1,
+          "Projects.isCompleted": 1,
+          "Projects.isArchieved": 1,
+          "Projects.completedDate": 1
+        }
+      },
+      {
+        $match: {
+          "Projects.projectName": {
+            $regex: search,
+            $options: 'i',
+          }
+        }
+      },
+      {
+        $skip: parseInt(pageParams.skip)
+      },
+      {
+        $limit: parseInt(pageParams.limit)
+      }
+    ]);
+    let countProjectMemberData = await Task.countDocuments({
+      memberId: userId,
+      status: 1
+    });
+    var totalPages = countProjectMemberData / perPage;
+    totalPages = Math.ceil(totalPages);
+    var hasNextPage = page < totalPages;
+    let promiseArr = [];
+    let memberDetailsArray = [];
+    for (let i = 0; i < listProjectMemberData.length; i++) {
+      var memberProjectDetails = {};
+      projectId = listProjectMemberData[i].Projects._id;
+      let countTasks = await Task.countDocuments({
+        projectId: projectId,
+        status: 1
+      });
+      let countMembers = await (await Task.distinct('memberId', {
+        projectId: projectId,
+        status: 1
+      })).length;
+      memberProjectDetails.id = listProjectMemberData[i].Projects._id;
+      memberProjectDetails.projectName = listProjectMemberData[i].Projects.projectName;
+      memberProjectDetails.projectCode = listProjectMemberData[i].Projects.projectCode;
+      memberProjectDetails.dueDate = listProjectMemberData[i].Projects.dueDate;
+      memberProjectDetails.isCompleted = listProjectMemberData[i].Projects.isCompleted;
+      memberProjectDetails.isArchieved = listProjectMemberData[i].Projects.isArchieved;
+      memberProjectDetails.completedDate = listProjectMemberData[i].Projects.completedDate;
+      memberProjectDetails.taskCount = countTasks;
+      memberProjectDetails.membersCount = countMembers;
+      promiseArr.push(listProjectMemberData[i]);
+      memberDetailsArray.push(memberProjectDetails);
+    };
+    Promise.all(promiseArr)
+      .then((result) =>
+        res.send({
+          success: 1,
+          statusCode: 200,
+          page: page,
+          perPage: perPage,
+          hasNextPage: hasNextPage,
+          totalItems: countProjectMemberData,
+          totalPages: totalPages,
+          items: memberDetailsArray,
+          message: 'Project listed successfully'
+        }))
+      .catch((err) => res.send({
+        success: 0,
+        statusCode: 400,
+        message: err.message
+      }));
+  };
+
+
+  function getMembersProjectList(reqObj, callback) {
+    let bearer = reqObj.bearer;
+    let url = reqObj.url;
+    delete reqObj.bearer;
+    delete reqObj.url;
+    gateway.getWithAuth(url, reqObj, bearer, function (err, result) {
+      if (err) {
+        console.log("Error while fetching project list..." + url);
+
+      }
+      callback(err, result);
+    });
   };

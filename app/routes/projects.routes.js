@@ -18,7 +18,9 @@ module.exports = (app) => {
     app.post('/projects/archieve/:id',auth, projects.archieveProject);
     app.patch('/projects/edit/:id',auth, projects.editProject);
     app.post('/projects/add-more',auth,fileUpload.fields([{ name: 'documents', maxCount: 5 }]), projects.appendFilesArray);
-    app.patch('/projects/remove-doc',auth,projects.removeDocs)
+    app.patch('/projects/remove-doc',auth,projects.removeDocs);
+    app.get('/projects/helper',auth,projects.helperApi);
+    app.get('/projects/membersProjectData',auth, projects.membersProjectData);
 };
 
 
