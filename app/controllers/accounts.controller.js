@@ -630,17 +630,15 @@
     var userData = req.identity.data;
     var userType = userData.type;
     var userId = userData.userId;
-    var type = req.query.type;
-    var filter = req.query.filter;
-    var search = req.query.searchKeyword || '.*';
-    var projectId = req.query.projectId;
-    var findCriteriaTasks;
-    var findCriteriaProject;
+    var params = req.query;
+    var type = params.type;
+    var filter = params.filter;
+    var search = params.searchKeyword || '.*';
+    var projectId = params.projectId;
     var findCriteriaMembers;
     var searchResult;
     var itemsCount;
     search = search + '.*';
-    var params = req.query;
     var page = params.page || 1;
     page = page > 0 ? page : 1;
     var perPage = Number(params.perPage) || projectsConfig.resultsPerPage;
@@ -685,7 +683,7 @@
       if (filter) {
         if (filter == 'Archieved') {
           findCriteriaProject.isArchieved = true;
-          findCriteriaProjectMember.isArchieved = true       
+          findCriteriaProjectMember.isArchieved = true
         };
         if (filter == 'Completed') {
           findCriteriaProject.isCompleted = true;

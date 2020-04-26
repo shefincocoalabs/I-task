@@ -531,7 +531,7 @@
     var searchObj = {};
     if (type == 'Members') {
       searchObj.$match = {
-        "memberId.fullName": {
+        "member.fullName": {
           $regex: search,
           $options: 'i',
         }
@@ -600,16 +600,16 @@
     let data = [];
     for (let j = 0; j < projectMembers.length; j++) {
       var projectTasksData = {};
-      projectTasksData.members = {}
+      projectTasksData.member = {}
       projectTasksData.id = projectMembers[j]._id;
       projectTasksData.taskName = projectMembers[j].taskName;
       projectTasksData.dueDate = projectMembers[j].dueDate;
       projectTasksData.isCompleted = projectMembers[j].isCompleted;
       projectTasksData.completedDate = projectMembers[j].completedDate;
-      projectTasksData.members.id = projectMembers[j].member._id;
-      projectTasksData.members.fullName = projectMembers[j].member.fullName;
-      projectTasksData.members.position = projectMembers[j].member.position;
-      projectTasksData.members.image = projectMembers[j].member.image;
+      projectTasksData.member.id = projectMembers[j].member._id;
+      projectTasksData.member.fullName = projectMembers[j].member.fullName;
+      projectTasksData.member.position = projectMembers[j].member.position;
+      projectTasksData.member.image = projectMembers[j].member.image;
       data.push(projectTasksData);
     }
     if (type == 'Members') {
