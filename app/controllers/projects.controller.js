@@ -100,6 +100,7 @@
     var userId = userData.userId;
     var params = req.query;
     var filters;
+    var filterMemberProjects;
     var projectId;
     var i;
     var page = params.page || 1;
@@ -118,6 +119,9 @@
         projectCreatedBy: userId,
         status: 1
       };
+    }
+    if (params.findCriteriaProjectMember) {
+      filterMemberProjects = params.findCriteriaProjectMember;
     }
     var queryProjection = {
 
@@ -178,6 +182,7 @@
           }));
       } else {
         let projectListReqObj = {
+          filterMemberProjects,
           page,
           perPage,
           userId,
@@ -398,6 +403,7 @@
   };
 
   // **** Append more files to array in a project ****  Author: Shefin S
+
   exports.appendFilesArray = async (req, res) => {
     var projectId = req.body.projectId;
     var files = req.files;
@@ -462,6 +468,7 @@
   };
 
   // **** Remove files from array in a project  ****  Author: Shefin S
+
   exports.removeDocs = async (req, res) => {
     var docIds = req.body.docIds;
     var projectId = req.body.projectId;
@@ -645,6 +652,7 @@
       skip: offset,
       limit: perPage
     };
+    var filterMemberProjects = req.query.filterMemberProjects;
     let listProjectMemberData = await Task.aggregate([{
         $match: {
           memberId: ObjectId(userId),

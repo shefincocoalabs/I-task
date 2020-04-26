@@ -679,18 +679,22 @@
       })
     } else {
       var findCriteriaProject = {};
+      var findCriteriaProjectMember = {};
       var findCriteriaTasks = {};
       var findCriteriaMembers = {};
       if (filter) {
         if (filter == 'Archieved') {
           findCriteriaProject.isArchieved = true;
+          findCriteriaProjectMember.isArchieved = true       
         };
         if (filter == 'Completed') {
           findCriteriaProject.isCompleted = true;
+          findCriteriaProjectMember.isCompleted = true;
           findCriteriaTasks.isCompleted = true;
         };
         if (filter == 'Pending') {
           findCriteriaProject.isCompleted = false;
+          findCriteriaProjectMember.isCompleted = false;
           findCriteriaTasks.isCompleted = false;
         };
       };
@@ -736,12 +740,12 @@
         findCriteriaTasks.memberId = userId;
         findCriteriaTasks.status = 1;
         // Projects findcriteria using searchKeyword and filter
-        findCriteriaProject.projectName = {
+        findCriteriaProjectMember.projectName = {
           $regex: search,
           $options: 'i'
         };
-        findCriteriaProject.memberId = userId;
-        findCriteriaProject.status = 1;
+        findCriteriaProjectMember.memberId = userId;
+        findCriteriaProjectMember.status = 1;
       }
       try {
         if (type == 'Members' || type == 'Tasks') {
@@ -790,6 +794,7 @@
         } else {
           let projectListReqObj = {
             findCriteriaProject,
+            findCriteriaProjectMember,
             page,
             perPage,
             userType,
