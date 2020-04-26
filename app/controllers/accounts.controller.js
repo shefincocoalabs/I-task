@@ -737,13 +737,6 @@
         };
         findCriteriaTasks.memberId = userId;
         findCriteriaTasks.status = 1;
-        // Projects findcriteria using searchKeyword and filter
-        findCriteriaProjectMember.projectName = {
-          $regex: search,
-          $options: 'i'
-        };
-        findCriteriaProjectMember.memberId = userId;
-        findCriteriaProjectMember.status = 1;
       }
       try {
         if (type == 'Members' || type == 'Tasks') {

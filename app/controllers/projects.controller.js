@@ -543,7 +543,9 @@
           $options: 'i',
         }
       }
-    }
+    };
+    console.log('searchObj');
+    console.log(searchObj);
     let projectMembers = await Task.aggregate([{
         $match: {
           projectId: ObjectId(projectId),
@@ -652,7 +654,43 @@
       skip: offset,
       limit: perPage
     };
+    var value;
     var filterMemberProjects = req.query.filterMemberProjects;
+    var searchObj = {};
+    if (filterMemberProjects.isCompleted == 'true') {
+      value = filterMemberProjects.isCompleted;
+      searchObj.$match = {
+        "Projects.projectName": {
+          $regex: search,
+          $options: 'i',
+        },
+        isCompleted: Boolean(value)
+      }
+    } else if (filterMemberProjects.isCompleted == 'false') {
+      searchObj.$match = {
+        "Projects.projectName": {
+          $regex: search,
+          $options: 'i',
+        },
+        isCompleted: Boolean(value)
+      }
+    } else if (filterMemberProjects.isArchieved == 'true') {
+      value = filterMemberProjects.isArchieved;
+      searchObj.$match = {
+        "Projects.projectName": {
+          $regex: search,
+          $options: 'i',
+        },
+        isArchieved: Boolean(value)
+      }
+    } else {
+      searchObj.$match = {
+        "Projects.projectName": {
+          $regex: search,
+          $options: 'i',
+        }
+      }
+    };
     let listProjectMemberData = await Task.aggregate([{
         $match: {
           memberId: ObjectId(userId),
@@ -670,6 +708,7 @@
       {
         $unwind: "$Projects"
       },
+      searchObj,
       {
         $project: {
           "Projects._id": 1,
@@ -679,14 +718,6 @@
           "Projects.isCompleted": 1,
           "Projects.isArchieved": 1,
           "Projects.completedDate": 1
-        }
-      },
-      {
-        $match: {
-          "Projects.projectName": {
-            $regex: search,
-            $options: 'i',
-          }
         }
       },
       {
