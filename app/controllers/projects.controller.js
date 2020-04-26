@@ -544,8 +544,6 @@
         }
       }
     };
-    console.log('searchObj');
-    console.log(searchObj);
     let projectMembers = await Task.aggregate([{
         $match: {
           projectId: ObjectId(projectId),
