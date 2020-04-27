@@ -559,7 +559,18 @@
         }
       },
       {
+        $lookup: {
+          from: "Projects",
+          localField: "projectId",
+          foreignField: "_id",
+          as: "project"
+        }
+      },
+      {
         $unwind: "$member"
+      },
+      {
+        $unwind: "$project"
       },
       searchObj,
       {
@@ -572,6 +583,9 @@
           "member.fullName": 1,
           "member.image": 1,
           "member.position": 1,
+          "project._id":1,
+          "project.projectName": 1,
+          "project.dueDate":1
         }
       },
       {
@@ -600,7 +614,8 @@
     let data = [];
     for (let j = 0; j < projectMembers.length; j++) {
       var projectTasksData = {};
-      projectTasksData.member = {}
+      projectTasksData.member = {};
+      projectTasksData.project = {};
       projectTasksData.id = projectMembers[j]._id;
       projectTasksData.taskName = projectMembers[j].taskName;
       projectTasksData.dueDate = projectMembers[j].dueDate;
@@ -610,6 +625,9 @@
       projectTasksData.member.fullName = projectMembers[j].member.fullName;
       projectTasksData.member.position = projectMembers[j].member.position;
       projectTasksData.member.image = projectMembers[j].member.image;
+      projectTasksData.project.id = projectMembers[j].project._id;
+      projectTasksData.project.projectName = projectMembers[j].project.projectName;
+      projectTasksData.project.dueDate = projectMembers[j].project.dueDate;
       data.push(projectTasksData);
     }
     if (type == 'Members') {
@@ -618,7 +636,7 @@
         statusCode: 200,
         items: items,
         page: page,
-        perPage: perPage,
+        perPage: parseInt(perPage),
         hasNextPage: hasNextPage,
         totalItems: itemsCount,
         totalPages: totalPages,
@@ -630,7 +648,7 @@
         statusCode: 200,
         items: data,
         page: page,
-        perPage: perPage,
+        perPage: parseInt(perPage),
         hasNextPage: hasNextPage,
         totalItems: itemsCount,
         message: 'Project tasks listed successfully'
