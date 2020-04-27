@@ -592,7 +592,7 @@
     for (let i = 0; i < projectMembers.length; i++) {
       var projectMembersData = {};
       projectMembersData.id = projectMembers[i].member._id;
-      projectMembersData.memberName = projectMembers[i].member.fullName;
+      projectMembersData.fullName = projectMembers[i].member.fullName;
       projectMembersData.image = projectMembers[i].member.image;
       projectMembersData.position = projectMembers[i].member.position;
       items.push(projectMembersData);
@@ -616,7 +616,7 @@
       res.send({
         success: 1,
         statusCode: 200,
-        members: items,
+        items: items,
         page: page,
         perPage: perPage,
         hasNextPage: hasNextPage,
@@ -628,7 +628,7 @@
       res.send({
         success: 1,
         statusCode: 200,
-        memberTasks: data,
+        items: data,
         page: page,
         perPage: perPage,
         hasNextPage: hasNextPage,
