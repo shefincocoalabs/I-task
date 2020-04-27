@@ -8,6 +8,7 @@
 
   //   **** Add a new member ****  Author: Shefin S
   exports.addMember = async (req, res) => {
+    console.log(req.file);
     var userData = req.identity.data;
     var userId = userData.userId;
     var fullName = req.body.fullName;
