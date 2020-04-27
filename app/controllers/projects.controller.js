@@ -261,7 +261,11 @@
       }, taskQueryProjection).populate({
         path: 'memberId',
         select: 'fullName image position'
-      }).lean().limit(3)
+      }).lean().limit(3);
+      let countPorjectMembers = await Task.countDocuments({
+        projectId: projectId,
+        status: 1
+      });
       let items = [];
       for (let i = 0; i < projectMembers.length; i++) {
         var projectMembersData = {};
@@ -280,6 +284,8 @@
       projectDetails.isCompleted = projectData.isCompleted;
       projectDetails.completedDate = projectData.completedDate;
       projectDetails.documents = projectData.documents;
+      projectDetails.projectMembersCount = countPorjectMembers;
+      projectDetails.tasksCount = countPorjectMembers;
       projectDetails.members = items;
       projectDetails.membersTask = projectMembersTasks;
       res.send({
