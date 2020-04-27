@@ -589,9 +589,9 @@
           "member.fullName": 1,
           "member.image": 1,
           "member.position": 1,
-          "project._id":1,
+          "project._id": 1,
           "project.projectName": 1,
-          "project.dueDate":1
+          "project.dueDate": 1
         }
       },
       {
@@ -679,39 +679,41 @@
     var value;
     var filterMemberProjects = req.query.filterMemberProjects;
     var searchObj = {};
-    if (filterMemberProjects.isCompleted == 'true') {
-      value = filterMemberProjects.isCompleted;
-      searchObj.$match = {
-        "Projects.projectName": {
-          $regex: search,
-          $options: 'i',
-        },
-        isCompleted: Boolean(value)
-      }
-    } else if (filterMemberProjects.isCompleted == 'false') {
-      searchObj.$match = {
-        "Projects.projectName": {
-          $regex: search,
-          $options: 'i',
-        },
-        isCompleted: Boolean(value)
-      }
-    } else if (filterMemberProjects.isArchieved == 'true') {
-      value = filterMemberProjects.isArchieved;
-      searchObj.$match = {
-        "Projects.projectName": {
-          $regex: search,
-          $options: 'i',
-        },
-        isArchieved: Boolean(value)
-      }
-    } else {
-      searchObj.$match = {
-        "Projects.projectName": {
-          $regex: search,
-          $options: 'i',
+    if (filterMemberProjects) {
+      if (filterMemberProjects.isCompleted == 'true') {
+        value = filterMemberProjects.isCompleted;
+        searchObj.$match = {
+          "Projects.projectName": {
+            $regex: search,
+            $options: 'i',
+          },
+          isCompleted: Boolean(value)
         }
-      }
+      } else if (filterMemberProjects.isCompleted == 'false') {
+        searchObj.$match = {
+          "Projects.projectName": {
+            $regex: search,
+            $options: 'i',
+          },
+          isCompleted: Boolean(value)
+        }
+      } else if (filterMemberProjects.isArchieved == 'true') {
+        value = filterMemberProjects.isArchieved;
+        searchObj.$match = {
+          "Projects.projectName": {
+            $regex: search,
+            $options: 'i',
+          },
+          isArchieved: Boolean(value)
+        }
+      } else {
+        searchObj.$match = {
+          "Projects.projectName": {
+            $regex: search,
+            $options: 'i',
+          }
+        }
+      };
     };
     let listProjectMemberData = await Task.aggregate([{
         $match: {
@@ -730,7 +732,7 @@
       {
         $unwind: "$Projects"
       },
-      searchObj,
+      // searchObj,
       {
         $project: {
           "Projects._id": 1,
