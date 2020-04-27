@@ -706,14 +706,14 @@
           },
           isArchieved: Boolean(value)
         }
-      } else {
-        searchObj.$match = {
-          "Projects.projectName": {
-            $regex: search,
-            $options: 'i',
-          }
+      }
+    } else {
+      searchObj.$match = {
+        "Projects.projectName": {
+          $regex: search,
+          $options: 'i',
         }
-      };
+      }
     };
     let listProjectMemberData = await Task.aggregate([{
         $match: {
@@ -732,7 +732,7 @@
       {
         $unwind: "$Projects"
       },
-      // searchObj,
+      searchObj,
       {
         $project: {
           "Projects._id": 1,
