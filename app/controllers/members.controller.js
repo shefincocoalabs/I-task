@@ -15,7 +15,7 @@
     var phone = req.body.phone;
     var position = req.body.position;
     var password = req.body.password;
-    var image = req.file.filename;
+    var image = req.file ? req.file.filename : '';
     if (!fullName || !email || !phone || !position || !password) {
       var errors = [];
       if (!fullName) {
@@ -190,9 +190,9 @@
     }
   };
 
-// *** Add multiple tasks from existing unassigned tasks to the member ***  Author: Shefin S
+  // *** Add multiple tasks from existing unassigned tasks to the member ***  Author: Shefin S
 
-exports.addExisting = async (req, res) => {
+  exports.addExisting = async (req, res) => {
     var memberId = req.body.memberId;
     var tasks = req.body.tasks;
     if (!memberId || !tasks) {
@@ -290,7 +290,7 @@ exports.addExisting = async (req, res) => {
       let memberTask = await Task.find(filters, queryProjection, pageParams).populate([{
         path: 'memberId',
         select: 'fullName image'
-      },{
+      }, {
         path: 'projectId',
         select: 'projectName dueDate'
       }])
@@ -436,5 +436,3 @@ exports.addExisting = async (req, res) => {
       message: 'Positions listed successfully'
     })
   };
-
-
