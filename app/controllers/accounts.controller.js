@@ -24,10 +24,9 @@
     var fullName = req.body.fullName;
     var phone = req.body.phone;
     var email = req.body.email;
-    var position = req.body.position;
     var password = req.body.password;
     var confirmPassword = req.body.confirmPassword;
-    if (!fullName || !email || !phone || !position || !password || !confirmPassword) {
+    if (!fullName || !email || !phone || !password || !confirmPassword) {
       var errors = [];
       if (!fullName) {
         errors.push({
@@ -45,12 +44,6 @@
         errors.push({
           field: "phone",
           message: "Phone cannot be empty"
-        });
-      }
-      if (!position) {
-        errors.push({
-          field: "position",
-          message: "Position cannot be empty"
         });
       }
       if (!password) {
@@ -83,7 +76,6 @@
       fullName: fullName,
       email: email,
       phone: phone,
-      position: position,
       password: password,
       image: '',
       status: 1,
