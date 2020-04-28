@@ -774,6 +774,7 @@
             hasNextPage: hasNextPage,
             totalItems: itemsCount,
             totalPages: totalPages,
+            imageBase: memberConfig.imageBase,
             message: 'Search results listed successfully'
           })
         } else {
