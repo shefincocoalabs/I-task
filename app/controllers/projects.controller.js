@@ -270,7 +270,7 @@
       for (let i = 0; i < projectMembers.length; i++) {
         var projectMembersData = {};
         projectMembersData.id = projectMembers[i].memberId._id;
-        projectMembersData.memberName = projectMembers[i].memberId.fullName;
+        projectMembersData.fullName = projectMembers[i].memberId.fullName;
         projectMembersData.image = projectMembers[i].memberId.image;
         projectMembersData.position = projectMembers[i].memberId.position;
         items.push(projectMembersData);
