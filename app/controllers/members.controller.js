@@ -8,7 +8,6 @@
 
   //   **** Add a new member ****  Author: Shefin S
   exports.addMember = async (req, res) => {
-    console.log(req.file);
     var userData = req.identity.data;
     var userId = userData.userId;
     var fullName = req.body.fullName;
@@ -71,7 +70,12 @@
 
     try {
       let checkMember = await Member.findOne({
-        email: email
+        email: email,
+        status: 1
+      });
+      let checkPhone = await Member.findOne({
+        phone: phone,
+        status: 1
       });
       if (checkMember) {
         return res.send({
@@ -80,6 +84,13 @@
           message: 'Member with email exists'
         })
       };
+      if (checkPhone) {
+        return res.send({
+          success: 0,
+          statusCode: 401,
+          message: 'Member with phone exists'
+        })
+      }
       let newMember = await member.save();
       res.send({
         success: 1,

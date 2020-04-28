@@ -334,18 +334,39 @@
 
   exports.sendSms = async (req, res) => {
     var phone = req.body.phone;
+    var userType = req.body.type;
     var expiry = Date.now() + (otpConfig.expirySeconds * 1000);
-    if (!phone) {
+    var checkPhone;
+    if (!phone || userType) {
+      var errors = [];
+      if (!phone) {
+        errors.push({
+          field: "phone",
+          message: "Phone cannot be empty"
+        });
+      }
+      if (!userType) {
+        errors.push({
+          field: "type",
+          message: "User type cannot be empty"
+        });
+      }
       return res.send({
         success: 0,
-        message: 'Phone cannot be empty'
+        statusCode: 400,
+        errors: errors,
       });
     };
     var filter = {
-      phone: phone
+      phone: phone,
+      status: 1
     };
     try {
-      let checkPhone = await Users.findOne(filter);
+      if (userType == 'Admin') {
+        checkPhone = await Users.findOne(filter);
+      } else {
+        checkPhone = await Members.findOne(filter);
+      }
       if (!checkPhone) {
         return res.send({
           success: 0,
@@ -394,6 +415,8 @@
     var phone = req.body.phone;
     var otp = req.body.otp;
     var apiToken = req.body.apiToken;
+    var userType = req.body.type;
+    var updateUserData;
     const buffer = crypto.randomBytes(20).toString('hex');
     if (!phone || !otp || !apiToken) {
       var errors = [];
@@ -455,14 +478,27 @@
           new: true,
           useFindAndModify: false
         });
-        let updateUserData = await Users.findOneAndUpdate({
-          phone: phone
-        }, {
-          passwordResetToken: buffer
-        }, {
-          new: true,
-          useFindAndModify: false
-        });
+        if (userType == 'Admin') {
+           updateUserData = await Users.findOneAndUpdate({
+            phone: phone,
+            status: 1
+          }, {
+            passwordResetToken: buffer
+          }, {
+            new: true,
+            useFindAndModify: false
+          });
+        } else {
+           updateUserData = await Members.findOneAndUpdate({
+            phone: phone,
+            status: 1
+          }, {
+            passwordResetToken: buffer
+          }, {
+            new: true,
+            useFindAndModify: false
+          });
+        }
         res.send({
           success: 1,
           statusCode: 200,
@@ -480,12 +516,20 @@
 
   // *** Reset Password ***  Author: Shefin S
   exports.resetPasssword = async (req, res) => {
+    var Usertype = req.body.type;
     var password = req.body.password;
     var confirmPassword = req.body.confirmPassword;
     var passwordResetToken = req.body.passwordResetToken;
     var phone = req.body.phone;
-    if (!password || !confirmPassword || !phone || !passwordResetToken) {
+    var updatePassword;
+    if (!Usertype || !password || !confirmPassword || !phone || !passwordResetToken) {
       var errors = [];
+      if (!Usertype) {
+        errors.push({
+          field: "type",
+          message: "User type cannot be empty"
+        });
+      }
       if (!password) {
         errors.push({
           field: "password",
@@ -530,10 +574,17 @@
     var update = {
       password: password
     };
-    let updatePassword = await Users.findOneAndUpdate(filter, update, {
-      new: true,
-      useFindAndModify: false
-    });
+    if (Usertype == 'Admin') {
+      updatePassword = await Users.findOneAndUpdate(filter, update, {
+        new: true,
+        useFindAndModify: false
+      });
+    } else {
+      updatePassword = await Members.findOneAndUpdate(filter, update, {
+        new: true,
+        useFindAndModify: false
+      });
+    }
     res.send({
       success: 1,
       statusCode: 200,
@@ -601,7 +652,7 @@
         };
         try {
           if (userType == 'Admin') {
-            passwordUpdate = await Users.findOneAndUpdate(filter,update, {
+            passwordUpdate = await Users.findOneAndUpdate(filter, update, {
               new: true,
               useFindAndModify: false
             });
