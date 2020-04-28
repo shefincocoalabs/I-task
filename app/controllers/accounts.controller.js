@@ -192,7 +192,7 @@
           position: user.position,
           type: 'Member',
           image: user.image,
-          imageBase: userConfig.imageBase
+          imageBase: memberConfig.imageBase
         };
         var token = jwt.sign({
           data: payload,
@@ -545,10 +545,13 @@
 
   exports.changePasssword = async (req, res) => {
     var userData = req.identity.data;
+    var userType = userData.type;
     var userId = userData.userId;
     var currentPassword = req.body.currentPassword;
     var newPassword = req.body.newPassword;
     var confirmPassword = req.body.confirmPassword;
+    var checkPassword;
+    var passwordUpdate;
     if (!currentPassword || !newPassword || !confirmPassword) {
       var errors = [];
       if (!currentPassword) {
@@ -575,11 +578,19 @@
         errors: errors,
       });
     };
-    let checkPassword = await Members.findOne({
-      _id: userId
-    }).catch(err => {
-      console.error(err);
-    });
+    if (userType == 'Admin') {
+      checkPassword = await Users.findOne({
+        _id: userId
+      }).catch(err => {
+        console.error(err);
+      });
+    } else {
+      checkPassword = await Members.findOne({
+        _id: userId
+      }).catch(err => {
+        console.error(err);
+      });
+    }
     if (checkPassword.password == currentPassword) {
       if (newPassword == confirmPassword) {
         var filter = {
@@ -589,10 +600,17 @@
           password: newPassword
         };
         try {
-          let passwordUpdate = await Members.findOneAndUpdate(filter, update, {
-            new: true,
-            useFindAndModify: false
-          });
+          if (userType == 'Admin') {
+            passwordUpdate = await Users.findOneAndUpdate(filter,update, {
+              new: true,
+              useFindAndModify: false
+            });
+          } else {
+            passwordUpdate = await Members.findOneAndUpdate(filter, update, {
+              new: true,
+              useFindAndModify: false
+            });
+          }
           res.send({
             success: 1,
             statusCode: 200,
