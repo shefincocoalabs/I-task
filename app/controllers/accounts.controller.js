@@ -337,7 +337,7 @@
     var userType = req.body.type;
     var expiry = Date.now() + (otpConfig.expirySeconds * 1000);
     var checkPhone;
-    if (!phone || userType) {
+    if (!phone || !userType) {
       var errors = [];
       if (!phone) {
         errors.push({
@@ -418,7 +418,7 @@
     var userType = req.body.type;
     var updateUserData;
     const buffer = crypto.randomBytes(20).toString('hex');
-    if (!phone || !otp || !apiToken) {
+    if (!phone || !otp || !apiToken || !userType) {
       var errors = [];
       if (!phone) {
         errors.push({
@@ -436,6 +436,12 @@
         errors.push({
           field: "apiToken",
           message: "apiToken cannot be empty"
+        });
+      }
+      if (!userType) {
+        errors.push({
+          field: "type",
+          message: "User type cannot be empty"
         });
       }
       return res.send({
