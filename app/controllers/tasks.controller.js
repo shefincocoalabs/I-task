@@ -305,6 +305,8 @@
         res.send({
           success: 1,
           statusCode: 200,
+          fileBase: tasksConfig.fileBase,
+          imageBase: memberConfig.imageBase,
           taskDetails: memberTaskDetail,
           message: 'Task detail fetched successfully'
         });
