@@ -670,7 +670,7 @@
     search = search + '.*';
     var projectId;
     var page = req.query.page;
-    var perPage = req.query.perPage;
+    var perPage = parseInt(req.query.perPage);
     var offset = (page - 1) * perPage;
     var pageParams = {
       skip: offset,
