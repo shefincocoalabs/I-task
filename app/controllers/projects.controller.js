@@ -173,6 +173,7 @@
             hasNextPage: hasNextPage,
             totalItems: itemsCount,
             totalPages: totalPages,
+            imageBase: membersConfig.imageBase,
             message: 'Projects listed successfully'
           }))
           .catch((err) => res.send({
@@ -646,6 +647,7 @@
         hasNextPage: hasNextPage,
         totalItems: itemsCount,
         totalPages: totalPages,
+        imageBase: membersConfig.imageBase,
         message: 'Project members listed successfully'
       })
     } else {
@@ -657,6 +659,7 @@
         perPage: parseInt(perPage),
         hasNextPage: hasNextPage,
         totalItems: itemsCount,
+        imageBase: membersConfig.imageBase,
         message: 'Project tasks listed successfully'
       })
     }
@@ -794,6 +797,7 @@
           totalItems: countProjectMemberData,
           totalPages: totalPages,
           items: memberDetailsArray,
+          imageBase: membersConfig.imageBase,
           message: 'Project listed successfully'
         }))
       .catch((err) => res.send({
