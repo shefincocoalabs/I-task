@@ -6,6 +6,7 @@
   var Otp = require('../models/otp.model.js');
   var config = require('../../config/app.config.js');
   var userConfig = config.users;
+  var memberConfig = config.members;
   var projectsConfig = config.projects;
   var otpConfig = config.otp;
   const paramsConfig = require('../../config/params.config');
@@ -188,7 +189,7 @@
           fullName: user.fullName,
           email: user.email,
           phone: user.phone,
-          position: '',
+          position: user.position,
           type: 'Member',
           image: user.image,
           imageBase: userConfig.imageBase
@@ -258,6 +259,7 @@
         userDetails.position = profileData.position;
         userDetails.type = userType;
         userDetails.image = profileData.image;
+        userDetails.imageBase = memberConfig.imageBase;
         res.send({
           success: 1,
           statusCode: 200,
