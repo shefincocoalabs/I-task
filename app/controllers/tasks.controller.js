@@ -158,6 +158,7 @@
       res.send({
         success: 1,
         statusCode: 200,
+        imageBase: memberConfig.imageBase,
         items: taskList,
         page: page,
         perPage: perPage,
