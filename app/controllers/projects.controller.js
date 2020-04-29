@@ -251,6 +251,7 @@
       console.log('projectData'); 
       console.log(projectData);
       let projectId = projectData.id;
+      console.log(projectId);
       let projectMembersTasks = await Task.find({
         projectId: projectId,
         status: 1
