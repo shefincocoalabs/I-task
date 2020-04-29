@@ -281,7 +281,7 @@
           projectMembersData.image = projectMembers[i].memberId.image;
           projectMembersData.position = projectMembers[i].memberId.position;
           items.push(projectMembersData);
-        } else {
+        } else { 
           items = [];
         }
       };
