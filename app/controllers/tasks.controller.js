@@ -67,6 +67,7 @@
       description: description,
       taskCreatedBy: userId,
       isCompleted: false,
+      completedDate: '',
       documents: documents || [],
       status: 1,
       tsCreatedAt: Number(moment().unix()),
