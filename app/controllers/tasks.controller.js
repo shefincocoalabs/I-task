@@ -14,7 +14,9 @@
     var userId = userData.userId;
     var taskName = req.body.taskName;
     var projectId = req.body.projectId;
-    var memberId = req.body.memberId
+    var memberId = req.body.memberId;
+    console.log('memberId');
+    console.log(memberId);
     var dueDate = req.body.dueDate;
     var description = req.body.description;
     var files = req.files;
@@ -73,7 +75,8 @@
       tsCreatedAt: Number(moment().unix()),
       tsModifiedAt: null
     });
-
+    console.log('newTask');
+    console.log(newTask);
     try {
       let saveNewTask = newTask.save();
       res.send({
