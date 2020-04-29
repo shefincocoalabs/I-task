@@ -248,7 +248,7 @@
     };
     try {
       let projectData = await Project.findOne(filter, queryProjection);
-      console.log('projectData'); 
+      console.log('projectData');
       console.log(projectData);
       let projectId = projectData.id;
       console.log(projectId);
@@ -275,11 +275,15 @@
       let items = [];
       for (let i = 0; i < projectMembers.length; i++) {
         var projectMembersData = {};
-        projectMembersData.id = projectMembers[i].memberId._id;
-        projectMembersData.fullName = projectMembers[i].memberId.fullName;
-        projectMembersData.image = projectMembers[i].memberId.image;
-        projectMembersData.position = projectMembers[i].memberId.position;
-        items.push(projectMembersData);
+        if (projectMembers[i].memberId) {
+          projectMembersData.id = projectMembers[i].memberId._id;
+          projectMembersData.fullName = projectMembers[i].memberId.fullName;
+          projectMembersData.image = projectMembers[i].memberId.image;
+          projectMembersData.position = projectMembers[i].memberId.position;
+          items.push(projectMembersData);
+        } else {
+          items = [];
+        }
       };
       let projectDetails = {};
       projectDetails.id = projectData.id;
