@@ -21,6 +21,8 @@
     var dueDate = req.body.dueDate;
     var description = req.body.description;
     var files = req.files;
+    console.log('files');
+    console.log(files);
     var documents = [];
     if (!taskName || !projectId || !dueDate || !description) {
       var errors = [];
