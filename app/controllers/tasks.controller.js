@@ -10,6 +10,8 @@
 
   //   *** Add new task *** Author: Shefin S
   exports.addTask = (req, res) => {
+    console.log('body');
+    console.log(req.body);
     var userData = req.identity.data;
     var userId = userData.userId;
     var taskName = req.body.taskName;
