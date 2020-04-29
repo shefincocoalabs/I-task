@@ -56,7 +56,7 @@
         errors: errors,
       });
     };
-    if (files) {
+    if (files.documents) {
       var len = files.documents.length;
       var i = 0;
       while (i < len) {
