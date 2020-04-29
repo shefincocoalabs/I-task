@@ -280,7 +280,7 @@
         items.push(projectMembersData);
       };
       let projectDetails = {};
-      projectDetails.id = projectData._id;
+      projectDetails.id = projectData.id;
       projectDetails.projectName = projectData.projectName;
       projectDetails.dueDate = projectData.dueDate;
       projectDetails.description = projectData.description;
