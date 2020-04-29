@@ -295,7 +295,7 @@
       projectDetails.isArchieved = projectData.isArchieved;
       projectDetails.isCompleted = projectData.isCompleted;
       console.log('type');
-      console.log(typeof(projectDetails.isCompleted));
+      console.log(typeof (projectDetails.isCompleted));
       projectDetails.completedDate = projectData.completedDate;
       projectDetails.documents = projectData.documents;
       projectDetails.projectMembersCount = countPorjectMembers;
@@ -567,6 +567,9 @@
     let projectMembers = await Task.aggregate([{
         $match: {
           projectId: ObjectId(projectId),
+          memberId: {
+            $ne: null
+          },
           status: 1
         }
       },
@@ -619,6 +622,16 @@
       projectId: projectId,
       status: 1
     });
+    let itemsCountMembers = await Task.countDocuments({
+      projectId: projectId,
+      memberId: {
+        $ne: null
+      },
+      status: 1
+    });
+    var totalPagesMembers = itemsCountMembers / perPage;
+    totalPagesMembers = Math.ceil(totalPagesMembers);
+    var hasNextPageMembers = page < totalPagesMembers;
     var totalPages = itemsCount / perPage;
     totalPages = Math.ceil(totalPages);
     var hasNextPage = page < totalPages;
@@ -657,9 +670,9 @@
         items: items,
         page: page,
         perPage: parseInt(perPage),
-        hasNextPage: hasNextPage,
-        totalItems: itemsCount,
-        totalPages: totalPages,
+        hasNextPage: hasNextPageMembers,
+        totalItems: itemsCountMembers,
+        totalPages: totalPagesMembers,
         imageBase: membersConfig.imageBase,
         message: 'Project members listed successfully'
       })
@@ -671,6 +684,7 @@
         page: page,
         perPage: parseInt(perPage),
         hasNextPage: hasNextPage,
+        totalPages: totalPages,
         totalItems: itemsCount,
         imageBase: membersConfig.imageBase,
         message: 'Project tasks listed successfully'
