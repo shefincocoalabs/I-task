@@ -548,8 +548,16 @@
       skip: offset,
       limit: perPage
     };
+    var matchObj = {};
     var searchObj = {};
     if (type == 'Members') {
+      matchObj.$match = {
+        projectId: ObjectId(projectId),
+        memberId: {
+          $ne: null
+        },
+        status: 1
+      };
       searchObj.$match = {
         "member.fullName": {
           $regex: search,
@@ -557,6 +565,10 @@
         }
       }
     } else {
+      matchObj.$match = {
+        projectId: ObjectId(projectId),
+        status: 1
+      };
       searchObj.$match = {
         taskName: {
           $regex: search,
@@ -564,15 +576,8 @@
         }
       }
     };
-    let projectMembers = await Task.aggregate([{
-        $match: {
-          projectId: ObjectId(projectId),
-          memberId: {
-            $ne: null
-          },
-          status: 1
-        }
-      },
+    let projectMembers = await Task.aggregate([
+      searchObj,
       {
         $lookup: {
           from: "Members",
