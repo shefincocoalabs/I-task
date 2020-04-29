@@ -270,6 +270,10 @@
         },
         status: 1
       });
+      let countProjectsTasks = await Task.countDocuments({
+        projectId: projectId,
+        status: 1
+      });
       let items = [];
       for (let i = 0; i < projectMembers.length; i++) {
         var projectMembersData = {};
@@ -293,7 +297,7 @@
       projectDetails.completedDate = projectData.completedDate;
       projectDetails.documents = projectData.documents;
       projectDetails.projectMembersCount = countPorjectMembers;
-      projectDetails.tasksCount = countPorjectMembers;
+      projectDetails.tasksCount = countProjectsTasks;
       projectDetails.members = items;
       projectDetails.membersTask = projectMembersTasks;
       res.send({
