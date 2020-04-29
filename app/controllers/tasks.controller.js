@@ -12,7 +12,7 @@
   exports.addTask = (req, res) => {
     console.log(req.body);
     console.log('body');
-    var userData = req.identity.data;
+    var userData = req.identity.data; 
     var userId = userData.userId;
     var taskName = req.body.taskName;
     var projectId = req.body.projectId;
