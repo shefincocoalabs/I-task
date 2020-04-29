@@ -266,7 +266,6 @@
         path: 'memberId',
         select: 'fullName image position'
       }).lean().limit(3);
-      console.log('projectMembers');
       console.log(projectMembers);
       let countPorjectMembers = await Task.countDocuments({
         projectId: projectId,
@@ -275,7 +274,7 @@
       let items = [];
       for (let i = 0; i < projectMembers.length; i++) {
         var projectMembersData = {};
-        if (projectMembers[i].memberId) {
+        if (projectMembers[i].memberId) {  
           projectMembersData.id = projectMembers[i].memberId._id;
           projectMembersData.fullName = projectMembers[i].memberId.fullName;
           projectMembersData.image = projectMembers[i].memberId.image;
