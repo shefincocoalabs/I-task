@@ -294,8 +294,6 @@
       projectDetails.description = projectData.description;
       projectDetails.isArchieved = projectData.isArchieved;
       projectDetails.isCompleted = projectData.isCompleted;
-      console.log('type');
-      console.log(typeof (projectDetails.isCompleted));
       projectDetails.completedDate = projectData.completedDate;
       projectDetails.documents = projectData.documents;
       projectDetails.projectMembersCount = countPorjectMembers;
@@ -577,7 +575,7 @@
       }
     };
     let projectMembers = await Task.aggregate([
-      searchObj,
+      matchObj,
       {
         $lookup: {
           from: "Members",
@@ -595,7 +593,10 @@
         }
       },
       {
-        $unwind: "$member"
+        $unwind: {
+          path: "$member",
+          "preserveNullAndEmptyArrays": true
+        },
       },
       {
         $unwind: "$project"
@@ -643,11 +644,13 @@
     let items = [];
     for (let i = 0; i < projectMembers.length; i++) {
       var projectMembersData = {};
-      projectMembersData.id = projectMembers[i].member._id;
-      projectMembersData.fullName = projectMembers[i].member.fullName;
-      projectMembersData.image = projectMembers[i].member.image;
-      projectMembersData.position = projectMembers[i].member.position;
-      items.push(projectMembersData);
+      if (projectMembers[i].member) {
+        projectMembersData.id = projectMembers[i].member._id;
+        projectMembersData.fullName = projectMembers[i].member.fullName;
+        projectMembersData.image = projectMembers[i].member.image;
+        projectMembersData.position = projectMembers[i].member.position;
+        items.push(projectMembersData);
+      }
     };
     let data = [];
     for (let j = 0; j < projectMembers.length; j++) {
@@ -659,10 +662,14 @@
       projectTasksData.dueDate = projectMembers[j].dueDate;
       projectTasksData.isCompleted = projectMembers[j].isCompleted;
       projectTasksData.completedDate = projectMembers[j].completedDate;
-      projectTasksData.member.id = projectMembers[j].member._id;
-      projectTasksData.member.fullName = projectMembers[j].member.fullName;
-      projectTasksData.member.position = projectMembers[j].member.position;
-      projectTasksData.member.image = projectMembers[j].member.image;
+      if (projectMembers[j].member) {
+        projectTasksData.member.id = projectMembers[j].member._id;
+        projectTasksData.member.fullName = projectMembers[j].member.fullName;
+        projectTasksData.member.position = projectMembers[j].member.position;
+        projectTasksData.member.image = projectMembers[j].member.image;
+      } else {
+        projectTasksData.member = {};
+      }
       projectTasksData.project.id = projectMembers[j].project._id;
       projectTasksData.project.projectName = projectMembers[j].project.projectName;
       projectTasksData.project.dueDate = projectMembers[j].project.dueDate;
