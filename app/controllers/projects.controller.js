@@ -250,7 +250,7 @@
       let projectData = await Project.findOne(filter, queryProjection);
       console.log('projectData'); 
       console.log(projectData);
-      let projectId = projectData._id;
+      let projectId = projectData.id;
       let projectMembersTasks = await Task.find({
         projectId: projectId,
         status: 1
