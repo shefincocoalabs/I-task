@@ -211,13 +211,6 @@
       var totalPages = itemsCount / perPage;
       totalPages = Math.ceil(totalPages);
       var hasNextPage = page < totalPages;
-      if (listUnassignedTasks.length == 0) {
-        return res.send({
-          success: 0,
-          statusCode: 500,
-          message: 'All existing tasks are assigned, please add a new task'
-        });
-      }
       res.send({
         success: 1,
         statusCode: 200,
