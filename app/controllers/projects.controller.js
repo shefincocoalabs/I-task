@@ -294,6 +294,8 @@
       projectDetails.description = projectData.description;
       projectDetails.isArchieved = projectData.isArchieved;
       projectDetails.isCompleted = projectData.isCompleted;
+      console.log('type');
+      console.log(typeof(projectDetails.isCompleted));
       projectDetails.completedDate = projectData.completedDate;
       projectDetails.documents = projectData.documents;
       projectDetails.projectMembersCount = countPorjectMembers;
