@@ -266,6 +266,8 @@
         path: 'memberId',
         select: 'fullName image position'
       }).lean().limit(3);
+      console.log('projectMembers');
+      console.log(projectMembers);
       let countPorjectMembers = await Task.countDocuments({
         projectId: projectId,
         status: 1
