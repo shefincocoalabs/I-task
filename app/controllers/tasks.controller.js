@@ -10,6 +10,7 @@
 
   //   *** Add new task *** Author: Shefin S
   exports.addTask = (req, res) => {
+    console.log('api called');
     console.log(req.body);
     console.log('body');
     var userData = req.identity.data; 
