@@ -248,10 +248,7 @@
     };
     try {
       let projectData = await Project.findOne(filter, queryProjection);
-      console.log('projectData');
-      console.log(projectData);
       let projectId = projectData.id;
-      console.log(projectId);
       let projectMembersTasks = await Task.find({
         projectId: projectId,
         status: 1
@@ -266,21 +263,23 @@
         path: 'memberId',
         select: 'fullName image position'
       }).lean().limit(3);
-      console.log(projectMembers);
       let countPorjectMembers = await Task.countDocuments({
         projectId: projectId,
+        memberId: {
+          $ne: null
+        },
         status: 1
       });
       let items = [];
       for (let i = 0; i < projectMembers.length; i++) {
         var projectMembersData = {};
-        if (projectMembers[i].memberId) {  
+        if (projectMembers[i].memberId) {
           projectMembersData.id = projectMembers[i].memberId._id;
           projectMembersData.fullName = projectMembers[i].memberId.fullName;
           projectMembersData.image = projectMembers[i].memberId.image;
           projectMembersData.position = projectMembers[i].memberId.position;
           items.push(projectMembersData);
-        } else { 
+        } else {
           items = [];
         }
       };
