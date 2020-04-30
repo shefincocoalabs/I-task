@@ -148,6 +148,9 @@
           });
           let countMembers = await (await Task.distinct('memberId', {
             projectId: projectId,
+            memberId: {
+              $ne: null
+            },
             status: 1
           })).length;
           projectDetails.id = listProjects[i]._id;
