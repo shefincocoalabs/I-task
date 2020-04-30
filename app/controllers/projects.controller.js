@@ -364,7 +364,7 @@
 
   exports.editProject = async (req, res) => {
     var projectId = req.params.id;
-    var projectName = req.body.taskName;
+    var projectName = req.body.projectName;
     var dueDate = req.body.dueDate;
     var description = req.body.description;
     var isValidId = ObjectId.isValid(projectId);
