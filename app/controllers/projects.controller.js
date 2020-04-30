@@ -668,7 +668,7 @@
         projectTasksData.member.position = projectMembers[j].member.position;
         projectTasksData.member.image = projectMembers[j].member.image;
       } else {
-        projectTasksData.member = {};
+        projectTasksData.member = null;
       }
       projectTasksData.project.id = projectMembers[j].project._id;
       projectTasksData.project.projectName = projectMembers[j].project.projectName;
