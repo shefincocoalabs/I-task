@@ -148,7 +148,7 @@
           });
           let countMembers = await (await Task.distinct('memberId', {
             projectId: projectId,
-            memberId: { 
+            memberId: {
               $ne: null
             },
             status: 1
@@ -259,20 +259,68 @@
         path: 'memberId',
         select: 'fullName image position'
       }).limit(3)
-      let projectMembers = await Task.find({
-        projectId: projectId,
-        status: 1
-      }, taskQueryProjection).populate({
-        path: 'memberId',
-        select: 'fullName image position'
-      }).lean().limit(3);
-      let countPorjectMembers = await Task.countDocuments({
+      // let projectMembers = await Task.find({
+      //   projectId: projectId,
+      //   status: 1
+      // }, taskQueryProjection).populate({
+      //   path: 'memberId',
+      //   select: 'fullName image position'
+      // }).lean().limit(3);
+      // console.log(projectMembers);
+      let projectMembers = await Task.aggregate([{
+          $match: {
+            projectId: ObjectId(projectId),
+            status: 1
+          }
+        }, {
+          $group: {
+            _id: null,
+            memberId: {
+              $addToSet: "$memberId"
+            }
+          }
+        },
+        {
+          $lookup: {
+            from: "Members",
+            localField: "memberId",
+            foreignField: "_id",
+            as: "memberId"
+          }
+        },
+        {
+          $unwind: "$memberId"
+        },
+        {
+          $project: {
+            "memberId._id": 1,
+            "memberId.fullName": 1,
+            "memberId.image": 1,
+            "memberId.position": 1,
+            taskName: 1,
+            dueDate: 1,
+            isCompleted: 1,
+            completedDate: 1
+          }
+        },
+        {
+          $limit: 3
+        }
+      ]);
+      // let countPorjectMembers = await Task.countDocuments({
+      //   projectId: projectId,
+      //   memberId: {
+      //     $ne: null
+      //   },
+      //   status: 1
+      // });
+      let countPorjectMembers = await (await Task.distinct('memberId', {
         projectId: projectId,
         memberId: {
           $ne: null
         },
         status: 1
-      });
+      })).length;
       let countProjectsTasks = await Task.countDocuments({
         projectId: projectId,
         status: 1
@@ -764,6 +812,14 @@
         $match: {
           memberId: ObjectId(userId),
           status: 1
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          projectId: {
+            $addToSet: "$projectId"
+          }
         }
       },
       {

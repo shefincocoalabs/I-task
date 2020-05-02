@@ -15,8 +15,6 @@
     var taskName = req.body.taskName;
     var projectId = req.body.projectId;
     var memberId = req.body.memberId;
-    console.log('memberId');
-    console.log(memberId);
     var dueDate = req.body.dueDate;
     var description = req.body.description;
     var files = req.files;
@@ -60,7 +58,7 @@
         documents.push(files.documents[i].filename);
         i++;
       }
-    }
+    };
     const newTask = new Task({
       projectId: projectId,
       memberId: memberId ? memberId : null,
@@ -75,8 +73,6 @@
       tsCreatedAt: Number(moment().unix()),
       tsModifiedAt: null
     });
-    console.log('newTask');
-    console.log(newTask);
     try {
       let saveNewTask = newTask.save();
       res.send({
