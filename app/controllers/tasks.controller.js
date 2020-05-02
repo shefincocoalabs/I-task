@@ -254,7 +254,7 @@
     };
     var filterMemberTasks = {
       _id: taskId,
-      // memberId: userId,
+      memberId: userId,
       status: 1
     };
     var queryProjection = {
