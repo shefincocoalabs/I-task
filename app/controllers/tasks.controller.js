@@ -10,7 +10,7 @@
 
   //   *** Add new task *** Author: Shefin S
   exports.addTask = (req, res) => {
-    var userData = req.identity.data; 
+    var userData = req.identity.data;
     var userId = userData.userId;
     var taskName = req.body.taskName;
     var projectId = req.body.projectId;
@@ -254,7 +254,7 @@
     };
     var filterMemberTasks = {
       _id: taskId,
-      memberId: userId,
+      // memberId: userId,
       status: 1
     };
     var queryProjection = {
@@ -375,21 +375,29 @@
         projectId: projectId,
         status: 1
       });
-
+      let checkProjectCompletion = [];
       for (i = 0; i < checkAllTasks.length; i++) {
-        if (checkAllTasks[i].isCompleted == false) {
-          break;
-        } else {
-          let updateProject = await Project.findOneAndUpdate({
-            _id: projectId
-          }, {
-            isCompleted: true,
-            completedDate: today
-          }, {
-            new: true,
-            useFindAndModify: false
-          });
-        }
+        checkProjectCompletion.push(checkAllTasks[i].isCompleted);
+      };
+      if (checkProjectCompletion.includes(false)) {
+        let updateProject = await Project.findOneAndUpdate({
+          _id: projectId
+        }, {
+          isCompleted: false,
+        }, {
+          new: true,
+          useFindAndModify: false
+        });
+      } else {
+        let updateProject = await Project.findOneAndUpdate({
+          _id: projectId
+        }, {
+          isCompleted: true,
+          completedDate: today
+        }, {
+          new: true,
+          useFindAndModify: false
+        });
       }
       res.send({
         success: 1,
@@ -512,7 +520,7 @@
     }
   };
 
-// *** Transfer task to a member ***  Author: Shefin S
+  // *** Transfer task to a member ***  Author: Shefin S
 
   exports.transferTask = async (req, res) => {
     var taskId = req.params.id;
