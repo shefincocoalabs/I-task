@@ -680,14 +680,14 @@
         res.send({
           success: 0,
           statusCode: 400,
-          message: 'Both new password and confirm password sholud be same'
+          message: 'Both new password and confirm password should be same'
         })
       }
     } else {
       return res.send({
         success: 0,
         statusCode: 400,
-        message: 'current password is incorreect'
+        message: 'current password is incorrect'
       })
     }
   };
