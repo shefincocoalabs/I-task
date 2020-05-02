@@ -162,7 +162,7 @@
           fullName: user.fullName,
           email: user.email,
           phone: user.phone,
-          position: '',
+          position: user.position ? user.position : '',
           type: 'Admin',
           image: user.image,
           imageBase: userConfig.imageBase
@@ -485,7 +485,7 @@
           useFindAndModify: false
         });
         if (userType == 'Admin') {
-           updateUserData = await Users.findOneAndUpdate({
+          updateUserData = await Users.findOneAndUpdate({
             phone: phone,
             status: 1
           }, {
@@ -495,7 +495,7 @@
             useFindAndModify: false
           });
         } else {
-           updateUserData = await Members.findOneAndUpdate({
+          updateUserData = await Members.findOneAndUpdate({
             phone: phone,
             status: 1
           }, {
