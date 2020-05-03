@@ -248,13 +248,12 @@
       return;
     };
     var findCriteria = {
-      _id: taskId,
+      _id: taskId,   
       taskCreatedBy: userId,
       status: 1
     };
     var filterMemberTasks = {
       _id: taskId,
-      memberId: userId,
       status: 1
     };
     var queryProjection = {

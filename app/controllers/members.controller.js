@@ -258,6 +258,7 @@
   }
 
   // *** List task of a member ***  Author: Shefin S
+  
   exports.listTask = async (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
@@ -287,13 +288,12 @@
     };
     var filters = {
       memberId: memberId,
-      taskCreatedBy: userId,
       status: 1
     };
     var queryProjection = {
       taskName: 1,
       dueDate: 1,
-      memberId: 1,
+      memberId: 1, 
       projectId: 1,
       isCompleted: 1,
       completedDate: 1
