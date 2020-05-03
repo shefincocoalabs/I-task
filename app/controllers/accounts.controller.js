@@ -703,6 +703,8 @@
     var type = params.type;
     var filter = params.filter;
     var search = params.searchKeyword || '.*';
+    console.log('searchkeyword');
+    console.log(search);
     var projectId = params.projectId;
     var findCriteriaMembers;
     var searchResult;
@@ -728,7 +730,6 @@
       let seperateListReqObj = {
         projectId,
         type,
-        search,
         page,
         perPage,
         userType,
@@ -853,9 +854,12 @@
             message: 'Search results listed successfully'
           })
         } else {
+          console.log('search in else');
+          console.log(search);
           let projectListReqObj = {
             findCriteriaProject,
             findCriteriaProjectMember,
+            search,
             page,
             perPage,
             userType,

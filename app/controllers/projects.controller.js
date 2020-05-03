@@ -96,6 +96,7 @@
   exports.listProject = async (req, res) => {
     var bearer = req.headers['authorization'];
     var userData = req.identity.data;
+    var search = req.query.search;
     var userType = userData.type;
     var userId = userData.userId;
     var params = req.query;
@@ -187,6 +188,7 @@
       } else {
         let projectListReqObj = {
           filterMemberProjects,
+          search,
           page,
           perPage,
           userId,
@@ -258,15 +260,8 @@
       }, taskQueryProjection).populate({
         path: 'memberId',
         select: 'fullName image position'
-      }).limit(3)
-      // let projectMembers = await Task.find({
-      //   projectId: projectId,
-      //   status: 1
-      // }, taskQueryProjection).populate({
-      //   path: 'memberId',
-      //   select: 'fullName image position'
-      // }).lean().limit(3);
-      // console.log(projectMembers);
+      }).limit(3);
+
       let projectMembers = await Task.aggregate([{
           $match: {
             projectId: ObjectId(projectId),
