@@ -851,10 +851,11 @@
         $limit: parseInt(pageParams.limit)
       }
     ]);
-    let countProjectMemberData = await Task.countDocuments({
-      memberId: userId,
-      status: 1
-    });
+    // let countProjectMemberData = await Task.countDocuments({
+    //   memberId: userId,
+    //   status: 1
+    // });
+    let countProjectMemberData = listProjectMemberData.length;
     var totalPages = countProjectMemberData / perPage;
     totalPages = Math.ceil(totalPages);
     var hasNextPage = page < totalPages;
