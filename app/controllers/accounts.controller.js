@@ -729,6 +729,7 @@
     if (projectId) {
       let seperateListReqObj = {
         projectId,
+        search,
         type,
         page,
         perPage,
@@ -854,8 +855,6 @@
             message: 'Search results listed successfully'
           })
         } else {
-          console.log('search in else');
-          console.log(search);
           let projectListReqObj = {
             findCriteriaProject,
             findCriteriaProjectMember,
