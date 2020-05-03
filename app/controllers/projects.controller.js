@@ -586,6 +586,8 @@
     var projectId = req.query.projectId;
     var search = req.query.search || '.*';
     search = search + '.*';
+    console.log('search');
+    console.log(search);
     var type = req.query.type;
     var page = req.query.page;
     var perPage = req.query.perPage;
@@ -777,7 +779,7 @@
             $regex: search,
             $options: 'i',
           },
-          isCompleted: Boolean(value)
+          "Projects.isCompleted": Boolean(value)
         }
       } else if (filterMemberProjects.isCompleted == 'false') {
         searchObj.$match = {
@@ -785,7 +787,7 @@
             $regex: search,
             $options: 'i',
           },
-          isCompleted: Boolean(value)
+          "Projects.isCompleted": Boolean(value)
         }
       } else if (filterMemberProjects.isArchieved == 'true') {
         value = filterMemberProjects.isArchieved;
@@ -794,7 +796,7 @@
             $regex: search,
             $options: 'i',
           },
-          isArchieved: Boolean(value)
+          "Projects.isArchieved": Boolean(value)
         }
       }
     } else {
