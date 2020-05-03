@@ -535,7 +535,9 @@
 
   exports.removeDocs = async (req, res) => {
     var docIds = req.body.docIds;
+    console.log(docIds);
     var projectId = req.body.projectId;
+    console.log(projectId);
     if (!docIds || !projectId) {
       var errors = [];
       if (!docIds) {
