@@ -16,10 +16,11 @@
     var projectName = req.body.projectName;
     var dueDate = req.body.dueDate;
     var description = req.body.description;
+    var admin = req.body.admin;
     var files = req.files;
     var projectCode;
     var documents = [];
-    if (!projectName || !dueDate || !description) {
+    if (!projectName || !dueDate || !description || !admin) {
       var errors = [];
       if (!dueDate) {
         errors.push({
@@ -37,6 +38,12 @@
         errors.push({
           field: "projectName",
           message: "ProjectName cannot be empty"
+        });
+      }
+      if (!admin) {
+        errors.push({
+          field: "admin",
+          message: "Admin cannot be empty"
         });
       }
       return res.send({
@@ -72,6 +79,7 @@
         completedDate: "",
         isArchieved: false,
         documents: documents || [],
+        admin: admin,
         status: 1,
         tsCreatedAt: Number(moment().unix()),
         tsModifiedAt: null

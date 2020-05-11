@@ -20,5 +20,6 @@ module.exports = (app) => {
     app.patch('/members/update-task/:id',auth, member.updateTask);
     app.delete('/members/delete-task/:id',auth, member.deleteTask);
     app.get('/members/list-positions',auth, member.listPositions);
+    app.get('/members/list-admins', auth, member.listAdmins)
 };
 

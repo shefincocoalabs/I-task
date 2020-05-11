@@ -33,6 +33,7 @@ const MemberSchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
+  type: String,
   passwordResetToken: String,
   status: Number,
   tsCreatedAt: Number,

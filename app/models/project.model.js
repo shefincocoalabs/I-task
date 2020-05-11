@@ -35,6 +35,7 @@ const ProjectSchema = mongoose.Schema({
   isCompleted : Boolean,
   completedDate: String,
   documents: Array,
+  admin: {type: mongoose.Schema.Types.ObjectId, ref: 'Member'},
   status: Number,
   tsCreatedAt: Number,
   tsModifiedAt: Number

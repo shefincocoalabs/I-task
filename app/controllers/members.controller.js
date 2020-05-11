@@ -15,8 +15,9 @@
     var phone = req.body.phone;
     var position = req.body.position;
     var password = req.body.password;
+    var type = req.body.type;
     var image = req.file ? req.file.filename : '';
-    if (!fullName || !email || !phone || !position || !password) {
+    if (!fullName || !email || !phone || !position || !password || !type) {
       var errors = [];
       if (!fullName) {
         errors.push({
@@ -48,6 +49,12 @@
           message: "password cannot be empty"
         });
       }
+      if (!type) {
+        errors.push({
+          field: "type",
+          message: "type cannot be empty"
+        });
+      }
       return res.send({
         success: 0,
         statusCode: 400,
@@ -62,6 +69,7 @@
       image: image,
       position: position,
       password: password,
+      type: type,
       createdBy: userId,
       status: 1,
       tsCreatedAt: Number(moment().unix()),
@@ -92,9 +100,18 @@
         })
       }
       let newMember = await member.save();
+      let memberItem = {};
+      memberItem.fullName = newMember.fullName;
+      memberItem.email = newMember.email;
+      memberItem.phone = newMember.phone;
+      memberItem.image = newMember.image;
+      memberItem.position = newMember.position;
+      memberItem.type = newMember.type;
+      memberItem.id = newMember.id;
       res.send({
         success: 1,
         statusCode: 200,
+        memberItem: memberItem,
         message: 'New member added successfully'
       })
     } catch (err) {
@@ -258,7 +275,7 @@
   }
 
   // *** List task of a member ***  Author: Shefin S
-  
+
   exports.listTask = async (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
@@ -293,7 +310,7 @@
     var queryProjection = {
       taskName: 1,
       dueDate: 1,
-      memberId: 1, 
+      memberId: 1,
       projectId: 1,
       isCompleted: 1,
       completedDate: 1
@@ -448,3 +465,53 @@
       message: 'Positions listed successfully'
     })
   };
+
+  exports.listAdmins = async (req, res) => {
+    var userData = req.identity.data;
+    var userId = userData.userId;
+    var params = req.query;
+    var page = params.page || 1;
+    page = page > 0 ? page : 1;
+    var perPage = Number(params.perPage) || membersConfig.resultsPerPage;
+    perPage = perPage > 0 ? perPage : membersConfig.resultsPerPage;
+    var offset = (page - 1) * perPage;
+    var pageParams = {
+      skip: offset,
+      limit: perPage
+    };
+    var findCriteria = {
+      type: 'Admin',
+      createdBy: userId,
+      status: 1
+    };
+    var queryProjection = {
+      fullName: 1,
+      image: 1,
+      position: 1,
+      type: 1
+    };
+    try {
+      let listAdmins = await Member.find(findCriteria, queryProjection, pageParams).limit(perPage);
+      let itemsCount = await Member.countDocuments(findCriteria);
+      var totalPages = itemsCount / perPage;
+      totalPages = Math.ceil(totalPages);
+      var hasNextPage = page < totalPages;
+      res.send({
+        success: 1,
+        statusCode: 200,
+        items: listAdmins,
+        page: page,
+        perPage: perPage,
+        hasNextPage: hasNextPage,
+        totalItems: itemsCount,
+        totalPages: totalPages,
+        message: 'Admins listed successfully'
+      });
+    } catch (err) {
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
+    }
+  }
