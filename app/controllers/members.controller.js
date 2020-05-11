@@ -501,6 +501,7 @@
       res.send({
         success: 1,
         statusCode: 200,
+        imageBase: membersConfig.imageBase,
         items: listAdmins,
         page: page,
         perPage: perPage,
