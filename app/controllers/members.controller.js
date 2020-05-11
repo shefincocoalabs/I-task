@@ -482,7 +482,7 @@
       limit: perPage
     };
     var findCriteria = {
-      type: 'Admin',
+      type: 'SubAdmin',
       createdBy: userId,
       status: 1
     };
