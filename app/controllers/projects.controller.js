@@ -61,7 +61,7 @@
       } else {
         projectCode = 'P' + projectsCount;
       }
-      if (req.files.documents) {
+      if (files) {
         var len = files.documents.length;
         var i = 0;
         while (i < len) {
@@ -267,7 +267,7 @@
         status: 1
       }, taskQueryProjection).populate({
         path: 'memberId',
-        select: 'fullName image position'
+        select: 'fullName image position type'
       }).limit(3);
 
       let projectMembers = await Task.aggregate([{
@@ -300,6 +300,7 @@
             "memberId.fullName": 1,
             "memberId.image": 1,
             "memberId.position": 1,
+            "memberId.type": 1,
             taskName: 1,
             dueDate: 1,
             isCompleted: 1,
@@ -336,6 +337,7 @@
           projectMembersData.fullName = projectMembers[i].memberId.fullName;
           projectMembersData.image = projectMembers[i].memberId.image;
           projectMembersData.position = projectMembers[i].memberId.position;
+          projectMembersData.type = projectMembers[i].memberId.type;
           items.push(projectMembersData);
         } else {
           items = [];
@@ -543,9 +545,7 @@
 
   exports.removeDocs = async (req, res) => {
     var docIds = req.body.docIds;
-    console.log(docIds);
     var projectId = req.body.projectId;
-    console.log(projectId);
     if (!docIds || !projectId) {
       var errors = [];
       if (!docIds) {
@@ -594,8 +594,6 @@
     var projectId = req.query.projectId;
     var search = req.query.search || '.*';
     search = search + '.*';
-    console.log('search');
-    console.log(search);
     var type = req.query.type;
     var page = req.query.page;
     var perPage = req.query.perPage;
@@ -927,3 +925,30 @@
       callback(err, result);
     });
   };
+
+// *** Change admin for a project ***   Author: Shefin S
+  exports.changeAdmin = async (req, res) => {
+    var projectId = req.body.projectId;
+    var admin = req.body.admin;
+    var filter = {
+      _id: projectId,
+      status: 1
+    };
+    var update = {
+      admin: admin
+    };
+    try {
+      let changeAdmin = await Project.findByIdAndUpdate(filter, update);
+      res.send({
+        success: 1,
+        statusCode: 200,
+        message: 'Admin changed successfully'
+      })
+    } catch (err) {
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
+    }
+  }

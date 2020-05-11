@@ -145,7 +145,8 @@
     var queryProjection = {
       fullName: 1,
       image: 1,
-      position: 1
+      position: 1,
+      type: 1
     };
     try {
       let memberList = await Member.find(filters, queryProjection, pageParams).limit(perPage);
@@ -200,7 +201,8 @@
       email: 1,
       phone: 1,
       image: 1,
-      position: 1
+      position: 1,
+      type: 1
     };
     try {
       let memberInfo = await Member.findOne(filter, queryProjection);

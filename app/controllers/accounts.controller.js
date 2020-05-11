@@ -190,7 +190,7 @@
           email: user.email,
           phone: user.phone,
           position: user.position,
-          type: 'Member',
+          type: user.type,
           image: user.image,
           imageBase: memberConfig.imageBase
         };
@@ -257,7 +257,7 @@
         userDetails.email = profileData.email;
         userDetails.phone = profileData.phone;
         userDetails.position = profileData.position;
-        userDetails.type = userType;
+        userDetails.type = profileData.type;
         userDetails.image = profileData.image;
         userDetails.imageBase = memberConfig.imageBase;
         res.send({

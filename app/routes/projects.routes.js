@@ -22,6 +22,7 @@ module.exports = (app) => {
     app.patch('/projects/remove-doc',auth,projects.removeDocs);
     app.get('/projects/helper',auth,projects.helperApi);
     app.get('/projects/membersProjectData',auth, projects.membersProjectData);
+    app.patch('/projects/changeAdmin',auth, projects.changeAdmin);
 };
 
 
