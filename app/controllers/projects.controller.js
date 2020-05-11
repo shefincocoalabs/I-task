@@ -260,7 +260,10 @@
       completedDate: 1
     };
     try {
-      let projectData = await Project.findOne(filter, queryProjection);
+      let projectData = await (await Project.findOne(filter, queryProjection).populate({
+        path: 'admin',
+        select: 'fullName image position type'
+      }));
       let projectId = projectData.id;
       let projectMembersTasks = await Task.find({
         projectId: projectId,
@@ -352,6 +355,7 @@
       projectDetails.isCompleted = projectData.isCompleted;
       projectDetails.completedDate = projectData.completedDate;
       projectDetails.documents = projectData.documents;
+      projectDetails.admin = projectData.admin;
       projectDetails.projectMembersCount = countPorjectMembers;
       projectDetails.tasksCount = countProjectsTasks;
       projectDetails.members = items;
