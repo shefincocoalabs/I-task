@@ -798,6 +798,35 @@
           createdBy: userId,
           status: 1
         };
+      } else if (userType == 'SubAdmin') {
+        // Project findcriteria using searchKeyword and filter
+        findCriteriaProject.projectName = {
+          $regex: search,
+          $options: 'i'
+        };
+        findCriteriaProject.admin = userId;
+        findCriteriaProject.status = 1;
+
+        let subAdminDetails = await Members.findOne({
+          _id: userId,
+          status: 1
+        });
+        var createdBy = subAdminDetails.createdBy;
+        findCriteriaMembers = {
+          $or: [{
+              createdBy: createdBy,
+              status: 1
+            },
+            {
+              createdBy: userId,
+              status: 1
+            }
+          ],
+          fullName: {
+            $regex: search,
+            $options: 'i',
+          }
+        };
       } else {
         // Tasks findcriteria using searchKeyword and filter
         findCriteriaTasks.taskName = {
@@ -934,6 +963,20 @@
   };
 
   function getSeperateList(reqObj, callback) {
+    let bearer = reqObj.bearer;
+    let url = reqObj.url;
+    delete reqObj.bearer;
+    delete reqObj.url;
+    gateway.getWithAuth(url, reqObj, bearer, function (err, result) {
+      if (err) {
+        console.log("Error while fetching seperate list..." + url);
+
+      }
+      callback(err, result);
+    });
+  }
+
+  function getTaskListSubAdmin(reqObj, callback) {
     let bearer = reqObj.bearer;
     let url = reqObj.url;
     delete reqObj.bearer;

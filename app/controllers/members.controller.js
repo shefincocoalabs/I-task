@@ -160,7 +160,7 @@
           _id: userId,
           status: 1
         });
-        createdBy = subAdminDetails.createdBy;
+        var createdBy = subAdminDetails.createdBy;
         memberList = await Member.find({
           $or: [{
               createdBy: createdBy,
