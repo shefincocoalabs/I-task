@@ -703,8 +703,6 @@
     var type = params.type;
     var filter = params.filter;
     var search = params.searchKeyword || '.*';
-    console.log('searchkeyword');
-    console.log(search);
     var projectId = params.projectId;
     var findCriteriaMembers;
     var searchResult;

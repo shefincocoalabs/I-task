@@ -8,7 +8,6 @@
   var ObjectId = require('mongoose').Types.ObjectId;
   var gateway = require('../components/gateway.component.js');
 
-
   //   *** Create Project *** Author: Shefin S
   exports.addProject = async (req, res) => {
     var userData = req.identity.data;
@@ -930,7 +929,8 @@
     });
   };
 
-// *** Change admin for a project ***   Author: Shefin S
+  // *** Change admin for a project ***   Author: Shefin S
+
   exports.changeAdmin = async (req, res) => {
     var projectId = req.body.projectId;
     var admin = req.body.admin;
@@ -955,4 +955,42 @@
         message: err.message
       });
     }
-  }
+  };
+
+  // *** Delete task from a project ***  Author: Shefin S
+  // When task deletes, member associated with the task also deletes
+
+  exports.deleteTask = async (req, res) => {
+    var taskId = req.body.taskId;
+    if (!taskId) {
+      return res.send({
+        success: 0,
+        statusCode: 400,
+        message: 'taskId cannot be empty'
+      })
+    };
+    var filter = {
+      _id: taskId,
+      status: 1
+    };
+    var update = {
+      status: 0
+    };
+    try {
+      let deleteTask = await Task.findOneAndUpdate(filter, update, {
+        new: true,
+        useFindAndModify: false
+      });
+      res.send({
+        success: 1,
+        statusCode: 200,
+        message: 'Task deleted successfully'
+      });
+    } catch (err) {
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      });
+    }
+  };

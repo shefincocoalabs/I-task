@@ -23,6 +23,7 @@ module.exports = (app) => {
     app.get('/projects/helper',auth,projects.helperApi);
     app.get('/projects/membersProjectData',auth, projects.membersProjectData);
     app.patch('/projects/changeAdmin',auth, projects.changeAdmin);
+    app.delete('/projects/delete-task',auth, projects.deleteTask)
 };
 
 
