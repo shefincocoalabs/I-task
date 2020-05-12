@@ -128,6 +128,7 @@
   exports.listMember = async (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
+    var userType = userData.type;
     var params = req.query;
     var page = params.page || 1;
     page = page > 0 ? page : 1;
@@ -148,9 +149,31 @@
       position: 1,
       type: 1
     };
+    var memberList;
+    var itemsCount;
     try {
-      let memberList = await Member.find(filters, queryProjection, pageParams).limit(perPage);
-      let itemsCount = await Member.countDocuments(filters);
+      if (userType == 'Admin') {
+        memberList = await Member.find(filters, queryProjection, pageParams).limit(perPage);
+        itemsCount = await Member.countDocuments(filters);
+      } else if (userType == 'SubAdmin') {
+        let subAdminDetails = await Member.findOne({
+          _id: userId,
+          status: 1
+        });
+        createdBy = subAdminDetails.createdBy;
+        memberList = await Member.find({
+          $or: [{
+              createdBy: createdBy,
+              status: 1
+            },
+            {
+              createdBy: userId,
+              status: 1
+            }
+          ]
+        }, queryProjection, pageParams).limit(perPage);
+        itemsCount = memberList.length;
+      };
       var totalPages = itemsCount / perPage;
       totalPages = Math.ceil(totalPages);
       var hasNextPage = page < totalPages;
