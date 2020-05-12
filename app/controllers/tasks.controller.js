@@ -274,11 +274,6 @@
     };
     var findCriteria = {
       _id: taskId,
-      taskCreatedBy: userId,
-      status: 1
-    };
-    var filterMemberTasks = {
-      _id: taskId,
       status: 1
     };
     var queryProjection = {
@@ -292,43 +287,28 @@
       documents: 1
     };
     try {
-      if (userType == 'Admin') {
-        let taskDetail = await Task.findOne(findCriteria, queryProjection)
-          .populate([{
-              path: 'projectId',
-              select: 'projectName'
-            },
-            {
-              path: 'memberId',
-              select: 'fullName image position'
+      let taskDetail = await Task.findOne(findCriteria, queryProjection)
+        .populate([{
+            path: 'projectId',
+            select: 'projectName admin',
+            populate: {
+              path: 'admin',
+              select: 'fullName type'
             }
-          ])
-        res.send({
-          success: 1,
-          statusCode: 200,
-          fileBase: tasksConfig.fileBase,
-          imageBase: memberConfig.imageBase,
-          taskDetails: taskDetail,
-          message: 'Task detail fetched successfully'
-        });
-      } else {
-        let memberTaskDetail = await Task.findOne(filterMemberTasks, queryProjection).populate([{
-          path: 'projectId',
-          select: 'projectName'
-        }, {
-          path: 'memberId',
-          select: 'fullName image position'
-        }]);
-        res.send({
-          success: 1,
-          statusCode: 200,
-          fileBase: tasksConfig.fileBase,
-          imageBase: memberConfig.imageBase,
-          taskDetails: memberTaskDetail,
-          message: 'Task detail fetched successfully'
-        });
-
-      }
+          },
+          {
+            path: 'memberId',
+            select: 'fullName image position'
+          }
+        ])
+      res.send({
+        success: 1,
+        statusCode: 200,
+        fileBase: tasksConfig.fileBase,
+        imageBase: memberConfig.imageBase,
+        taskDetails: taskDetail,
+        message: 'Task detail fetched successfully'
+      });
 
     } catch (err) {
       res.send({
