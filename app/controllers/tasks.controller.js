@@ -98,6 +98,8 @@
     var params = req.query;
     var taskList;
     var itemsCount;
+    var projectId;
+    var taskArray = [];
     var page = params.page || 1;
     page = page > 0 ? page : 1;
     var perPage = Number(params.perPage) || tasksConfig.resultsPerPage;
@@ -142,6 +144,29 @@
           select: 'projectName dueDate'
         }]).limit(perPage);
         itemsCount = await Task.countDocuments(filters);
+      } else if (userType == 'SubAdmin') {
+        let projectsList = await Project.find({
+          admin: userId,
+          status: 1
+        });
+        for (var i = 0; i < projectsList.length; i++) {
+          projectId = projectsList[i].id;
+          var taskListArray = await Task.find({
+            projectId: projectId,
+            status: 1
+          }, queryProjection, pageParams).populate([{
+            path: 'memberId',
+            select: 'fullName image'
+          }, {
+            path: 'projectId',
+            select: 'projectName dueDate'
+          }]).limit(perPage);
+          for (var j = 0; j < taskListArray.length; j++) {
+            taskArray.push(taskListArray[j]);
+            taskList = taskArray
+          };
+        }
+        itemsCount = taskList.length;
       } else {
         taskList = await Task.find(filterMemberTasks, queryProjectionMemberTask, pageParams).populate([{
           path: 'memberId',
@@ -248,7 +273,7 @@
       return;
     };
     var findCriteria = {
-      _id: taskId,   
+      _id: taskId,
       taskCreatedBy: userId,
       status: 1
     };

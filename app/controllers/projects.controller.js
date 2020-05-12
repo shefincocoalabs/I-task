@@ -123,11 +123,18 @@
     if (params.findCriteriaProject) {
       filters = params.findCriteriaProject;
     } else {
-      filters = {
-        projectCreatedBy: userId,
-        status: 1
+      if (userType == 'Admin') {
+        filters = {
+          projectCreatedBy: userId,
+          status: 1
+        };
+      } else {
+        filters = {
+          admin: userId,
+          status: 1
+        };
       };
-    }
+    };
     if (params.findCriteriaProjectMember) {
       filterMemberProjects = params.findCriteriaProjectMember;
     }
@@ -135,7 +142,7 @@
 
     };
     try {
-      if (userType == 'Admin') {
+      if (userType == 'Admin' || userType == 'SubAdmin') {
         let listProjects = await Project.find(filters, queryProjection, pageParams).limit(perPage);
         let itemsCount = await Project.countDocuments(filters);
         var totalPages = itemsCount / perPage;
