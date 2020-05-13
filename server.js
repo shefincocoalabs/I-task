@@ -12,11 +12,19 @@ const dbConfig = require('./config/database.config.js')[env];
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
-//jwttoken and verification
-
-
 // create express app
 const app = express();
+
+//jwttoken and verification
+const http = require('http');
+const socketio = require('socket.io');
+const server = http.createServer(app);
+const io = socketio(server);
+var chats  = require('./app/controllers/chat.controller');
+ 
+chats.chat(io);
+
+
 
 app.use(cors());
 // parse requests of content-type - application/x-www-form-urlencoded
@@ -30,7 +38,7 @@ module.exports = {
 
     mongoose.connect(dbConfig.url, {
       useNewUrlParser: true,
-
+      useUnifiedTopology: true
     }).then(() => {
       console.log("Successfully connected to the database");
       if (callback) {
@@ -61,7 +69,7 @@ module.exports = {
           require('./app/routes/' + route + '.routes.js')(app);
           i++;
         }
-        app.listen(port, () => {
+        server.listen(port, () => {
           console.log("Server is listening on port " + port);
         });
 
