@@ -120,6 +120,7 @@
       skip: offset,
       limit: perPage
     };
+    var memberDetailsArray = [];
     if (params.findCriteriaProject) {
       filters = params.findCriteriaProject;
     } else {
@@ -141,13 +142,21 @@
     var queryProjection = {
 
     };
+    var response;
+    var searchObj = {};
+    searchObj.$match = {};
+    var itemsCount;
     try {
       if (userType == 'Admin' || userType == 'SubAdmin') {
+        if (userType == 'SubAdmin') {
+          projectDataOfMembers(userId, page, perPage, searchObj, pageParams.skip, pageParams.limit).then(result => {
+            response = result;
+            console.log('response');
+            console.log(response);
+          })
+        }
         let listProjects = await Project.find(filters, queryProjection, pageParams).limit(perPage);
-        let itemsCount = await Project.countDocuments(filters);
-        var totalPages = itemsCount / perPage;
-        totalPages = Math.ceil(totalPages);
-        var hasNextPage = page < totalPages;
+        itemsCount = await Project.countDocuments(filters);
         let promiseArr = [];
         let items = [];
         for (i = 0; i < listProjects.length; i++) {
@@ -180,12 +189,28 @@
           promiseArr.push(listProjects[i]);
           items.push(projectDetails);
         };
+        var concatResult;
+        var totalPages;
+        var hasNextPage;
+        if (userType == 'SubAdmin') {
+          concatResult = [].concat(items, response);
+          itemsCount = concatResult.length;
+          totalPages = itemsCount / perPage;
+          totalPages = Math.ceil(totalPages);
+          hasNextPage = page < totalPages;
+        } else {
+          concatResult = items;
+          itemsCount = itemsCount;
+          totalPages = itemsCount / perPage;
+          totalPages = Math.ceil(totalPages);
+          hasNextPage = page < totalPages;
+        }
         //now execute promise all
         Promise.all(promiseArr)
           .then((result) => res.send({
             success: 1,
             statusCode: 200,
-            items: items,
+            items: concatResult,
             page: page,
             perPage: perPage,
             hasNextPage: hasNextPage,
@@ -785,6 +810,7 @@
       limit: perPage
     };
     var value;
+    var memberDetailsArray;
     var filterMemberProjects = req.query.filterMemberProjects;
     var searchObj = {};
     if (filterMemberProjects) {
@@ -823,83 +849,13 @@
         }
       }
     };
-    let listProjectMemberData = await Task.aggregate([{
-        $match: {
-          memberId: ObjectId(userId),
-          status: 1
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          projectId: {
-            $addToSet: "$projectId"
-          }
-        }
-      },
-      {
-        $lookup: {
-          from: "Projects",
-          localField: "projectId",
-          foreignField: "_id",
-          as: "Projects"
-        }
-      },
-      {
-        $unwind: "$Projects"
-      },
-      searchObj,
-      {
-        $project: {
-          "Projects._id": 1,
-          "Projects.projectName": 1,
-          "Projects.projectCode": 1,
-          "Projects.dueDate": 1,
-          "Projects.isCompleted": 1,
-          "Projects.isArchieved": 1,
-          "Projects.completedDate": 1
-        }
-      },
-      {
-        $skip: parseInt(pageParams.skip)
-      },
-      {
-        $limit: parseInt(pageParams.limit)
-      }
-    ]);
+    projectDataOfMembers(userId, page, perPage, searchObj, pageParams.skip, pageParams.limit).then(result => {
+      memberDetailsArray = result;
+    })
     // let countProjectMemberData = await Task.countDocuments({
     //   memberId: userId,
     //   status: 1
     // });
-    let countProjectMemberData = listProjectMemberData.length;
-    var totalPages = countProjectMemberData / perPage;
-    totalPages = Math.ceil(totalPages);
-    var hasNextPage = page < totalPages;
-    let promiseArr = [];
-    let memberDetailsArray = [];
-    for (let i = 0; i < listProjectMemberData.length; i++) {
-      var memberProjectDetails = {};
-      projectId = listProjectMemberData[i].Projects._id;
-      let countTasks = await Task.countDocuments({
-        projectId: projectId,
-        status: 1
-      });
-      let countMembers = await (await Task.distinct('memberId', {
-        projectId: projectId,
-        status: 1
-      })).length;
-      memberProjectDetails.id = listProjectMemberData[i].Projects._id;
-      memberProjectDetails.projectName = listProjectMemberData[i].Projects.projectName;
-      memberProjectDetails.projectCode = listProjectMemberData[i].Projects.projectCode;
-      memberProjectDetails.dueDate = listProjectMemberData[i].Projects.dueDate;
-      memberProjectDetails.isCompleted = listProjectMemberData[i].Projects.isCompleted;
-      memberProjectDetails.isArchieved = listProjectMemberData[i].Projects.isArchieved;
-      memberProjectDetails.completedDate = listProjectMemberData[i].Projects.completedDate;
-      memberProjectDetails.taskCount = countTasks;
-      memberProjectDetails.membersCount = countMembers;
-      promiseArr.push(listProjectMemberData[i]);
-      memberDetailsArray.push(memberProjectDetails);
-    };
     Promise.all(promiseArr)
       .then((result) =>
         res.send({
@@ -1001,3 +957,83 @@
       });
     }
   };
+
+  async function projectDataOfMembers(userId, page, perPage, searchObj, skip, limit) {
+    // console.log('searchObj');
+    // console.log(searchObj);
+    let listProjectMemberData = await Task.aggregate([{
+        $match: {
+          memberId: ObjectId(userId),
+          status: 1
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          projectId: {
+            $addToSet: "$projectId"
+          }
+        }
+      },
+      {
+        $lookup: {
+          from: "Projects",
+          localField: "projectId",
+          foreignField: "_id",
+          as: "Projects"
+        }
+      },
+      {
+        $unwind: "$Projects"
+      },
+      searchObj,
+      {
+        $project: {
+          "Projects._id": 1,
+          "Projects.projectName": 1,
+          "Projects.projectCode": 1,
+          "Projects.dueDate": 1,
+          "Projects.isCompleted": 1,
+          "Projects.isArchieved": 1,
+          "Projects.completedDate": 1,
+          "Projects.admin": 1
+        }
+      },
+      {
+        $skip: parseInt(skip)
+      },
+      {
+        $limit: parseInt(limit)
+      }
+    ]);
+    let countProjectMemberData = listProjectMemberData.length;
+    var totalPages = countProjectMemberData / perPage;
+    totalPages = Math.ceil(totalPages);
+    var hasNextPage = page < totalPages;
+    let promiseArr = [];
+    let memberDetailsArray = [];
+    for (let i = 0; i < listProjectMemberData.length; i++) {
+      var memberProjectDetails = {};
+      projectId = listProjectMemberData[i].Projects._id;
+      let countTasks = await Task.countDocuments({
+        projectId: projectId,
+        status: 1
+      });
+      let countMembers = await (await Task.distinct('memberId', {
+        projectId: projectId,
+        status: 1
+      })).length;
+      memberProjectDetails.id = listProjectMemberData[i].Projects._id;
+      memberProjectDetails.projectName = listProjectMemberData[i].Projects.projectName;
+      memberProjectDetails.projectCode = listProjectMemberData[i].Projects.projectCode;
+      memberProjectDetails.dueDate = listProjectMemberData[i].Projects.dueDate;
+      memberProjectDetails.isCompleted = listProjectMemberData[i].Projects.isCompleted;
+      memberProjectDetails.isArchieved = listProjectMemberData[i].Projects.isArchieved;
+      memberProjectDetails.completedDate = listProjectMemberData[i].Projects.completedDate;
+      memberProjectDetails.taskCount = countTasks;
+      memberProjectDetails.membersCount = countMembers;
+      promiseArr.push(listProjectMemberData[i]);
+      memberDetailsArray.push(memberProjectDetails);
+    };
+    return memberDetailsArray;
+  }

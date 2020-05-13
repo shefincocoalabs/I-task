@@ -163,9 +163,16 @@
           }]).limit(perPage);
           for (var j = 0; j < taskListArray.length; j++) {
             taskArray.push(taskListArray[j]);
-            taskList = taskArray
           };
         }
+        var taskListAssigned = await Task.find(filterMemberTasks, queryProjectionMemberTask, pageParams).populate([{
+          path: 'memberId',
+          select: 'fullName image'
+        }, {
+          path: 'projectId',
+          select: 'projectName dueDate'
+        }]).limit(perPage);
+        taskList = taskArray.concat(taskListAssigned);
         itemsCount = taskList.length;
       } else {
         taskList = await Task.find(filterMemberTasks, queryProjectionMemberTask, pageParams).populate([{
