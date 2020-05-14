@@ -827,6 +827,14 @@
             $options: 'i',
           }
         };
+
+        findCriteriaTasks.taskName = {
+          $regex: search,
+          $options: 'i'
+        };
+        findCriteriaTasks.memberId = userId;
+        findCriteriaTasks.status = 1;
+
       } else {
         // Tasks findcriteria using searchKeyword and filter
         findCriteriaTasks.taskName = {
