@@ -120,7 +120,6 @@
       skip: offset,
       limit: perPage
     };
-    var memberDetailsArray = [];
     if (params.findCriteriaProject) {
       filters = params.findCriteriaProject;
     } else {
@@ -151,8 +150,6 @@
         if (userType == 'SubAdmin') {
           projectDataOfMembers(userId, page, perPage, searchObj, pageParams.skip, pageParams.limit).then(result => {
             response = result;
-            console.log('response');
-            console.log(response);
           })
         }
         let listProjects = await Project.find(filters, queryProjection, pageParams).limit(perPage);
@@ -345,13 +342,7 @@
           $limit: 3
         }
       ]);
-      // let countPorjectMembers = await Task.countDocuments({
-      //   projectId: projectId,
-      //   memberId: {
-      //     $ne: null
-      //   },
-      //   status: 1
-      // });
+      
       let countPorjectMembers = await (await Task.distinct('memberId', {
         projectId: projectId,
         memberId: {

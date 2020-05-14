@@ -208,7 +208,11 @@
         userDetails: payload
       });
     } catch (err) {
-      console.error(err);
+      res.send({
+        success: 0,
+        statusCode: 500,
+        message: err.message
+      })
     }
   };
 
@@ -850,7 +854,8 @@
             searchResult = await Members.find(findCriteriaMembers, {
               fullName: 1,
               image: 1,
-              position: 1
+              position: 1,
+              type: 1
             }, pageParams);
             itemsCount = await Members.countDocuments(findCriteriaMembers);
           } else if (type == 'Tasks') {
@@ -864,7 +869,7 @@
               }, pageParams)
               .populate([{
                   path: 'memberId',
-                  select: 'fullName image position'
+                  select: 'fullName image position type'
                 },
                 {
                   path: 'projectId',
@@ -971,20 +976,6 @@
   };
 
   function getSeperateList(reqObj, callback) {
-    let bearer = reqObj.bearer;
-    let url = reqObj.url;
-    delete reqObj.bearer;
-    delete reqObj.url;
-    gateway.getWithAuth(url, reqObj, bearer, function (err, result) {
-      if (err) {
-        console.log("Error while fetching seperate list..." + url);
-
-      }
-      callback(err, result);
-    });
-  }
-
-  function getTaskListSubAdmin(reqObj, callback) {
     let bearer = reqObj.bearer;
     let url = reqObj.url;
     delete reqObj.bearer;

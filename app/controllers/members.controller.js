@@ -111,6 +111,7 @@
       res.send({
         success: 1,
         statusCode: 200,
+        imageBase: membersConfig.imageBase,
         memberItem: memberItem,
         message: 'New member added successfully'
       })
