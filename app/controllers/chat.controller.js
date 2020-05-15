@@ -1,5 +1,6 @@
 exports.getChat = (req, res) => {
-  res.sendFile(__dirname + '/chat.html');
+//   res.sendFile(__dirname + '/chat.html');
+res.send('hiii');
 }
 
 exports.chat = function (io) {
@@ -16,3 +17,5 @@ exports.chat = function (io) {
     });
   });
 };
+
+
