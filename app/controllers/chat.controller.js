@@ -1,6 +1,6 @@
 exports.getChat = (req, res) => {
-  res.sendFile(__dirname + '/chat.html');
-// res.send('hiii');
+//   res.sendFile(__dirname + '/chat.html');
+res.send('hiii');
 }
 
 exports.chat = function (io) {
