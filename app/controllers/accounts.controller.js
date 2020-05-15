@@ -150,6 +150,8 @@
           email: email,
           password: password
         });
+        console.log('user');
+        console.log(user);
         if (!user) {
           return res.send({
             success: 0,
