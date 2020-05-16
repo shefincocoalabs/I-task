@@ -342,7 +342,7 @@
           $limit: 3
         }
       ]);
-      
+
       let countPorjectMembers = await (await Task.distinct('memberId', {
         projectId: projectId,
         memberId: {
@@ -841,31 +841,41 @@
       }
     };
     projectDataOfMembers(userId, page, perPage, searchObj, pageParams.skip, pageParams.limit).then(result => {
-      memberDetailsArray = result;
+      memberDetailsArray = result.memberDetailsArray;
+      res.send({
+        success: 1,
+        statusCode: 200,
+        page: page,
+        perPage: perPage,
+        hasNextPage: result.hasNextPage,
+        totalItems: result.countProjectMemberData,
+        totalPages: result.totalPages,
+        items: memberDetailsArray,
+        imageBase: membersConfig.imageBase,
+        message: 'Project listed successfully'
+      })
+      // res.send(memberDetailsArray);
     })
-    // let countProjectMemberData = await Task.countDocuments({
-    //   memberId: userId,
-    //   status: 1
-    // });
-    Promise.all(promiseArr)
-      .then((result) =>
-        res.send({
-          success: 1,
-          statusCode: 200,
-          page: page,
-          perPage: perPage,
-          hasNextPage: hasNextPage,
-          totalItems: countProjectMemberData,
-          totalPages: totalPages,
-          items: memberDetailsArray,
-          imageBase: membersConfig.imageBase,
-          message: 'Project listed successfully'
-        }))
-      .catch((err) => res.send({
-        success: 0,
-        statusCode: 400,
-        message: err.message
-      }));
+
+    // Promise.all(promiseArr)
+    //   .then((result) =>
+    //     res.send({
+    //       success: 1,
+    //       statusCode: 200,
+    //       page: page,
+    //       perPage: perPage,
+    //       hasNextPage: hasNextPage,
+    //       totalItems: countProjectMemberData,
+    //       totalPages: totalPages,
+    //       items: memberDetailsArray,
+    //       imageBase: membersConfig.imageBase,
+    //       message: 'Project listed successfully'
+    //     }))
+    //   .catch((err) => res.send({
+    //     success: 0,
+    //     statusCode: 400,
+    //     message: err.message
+    //   }));
   };
 
 
@@ -950,8 +960,6 @@
   };
 
   async function projectDataOfMembers(userId, page, perPage, searchObj, skip, limit) {
-    // console.log('searchObj');
-    // console.log(searchObj);
     let listProjectMemberData = await Task.aggregate([{
         $match: {
           memberId: ObjectId(userId),
@@ -997,7 +1005,23 @@
         $limit: parseInt(limit)
       }
     ]);
-    let countProjectMemberData = listProjectMemberData.length;
+    let countProjectMemberDatas = await Task.aggregate([{
+        $match: {
+          memberId: ObjectId(userId),
+          status: 1
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          projectId: {
+            $addToSet: "$projectId"
+          }
+        }
+      }
+    ]);
+    let countProjectMemberData = countProjectMemberDatas[0].projectId.length;
+    // let countProjectMemberData = listProjectMemberData.length;
     var totalPages = countProjectMemberData / perPage;
     totalPages = Math.ceil(totalPages);
     var hasNextPage = page < totalPages;
@@ -1026,5 +1050,11 @@
       promiseArr.push(listProjectMemberData[i]);
       memberDetailsArray.push(memberProjectDetails);
     };
-    return memberDetailsArray;
+    var returnObj = {
+      memberDetailsArray: memberDetailsArray,
+      countProjectMemberData: countProjectMemberData,
+      totalPages: totalPages,
+      hasNextPage: hasNextPage
+    };
+    return returnObj;
   }
