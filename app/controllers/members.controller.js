@@ -173,11 +173,21 @@
             }
           ]
         }, queryProjection, pageParams).limit(perPage);
-        itemsCount = memberList.length;
+        itemsCount = await Member.countDocuments({
+          $or: [{
+              createdBy: createdBy,
+              status: 1
+            },
+            {
+              createdBy: userId,
+              status: 1
+            }
+          ]
+        })
       };
       var totalPages = itemsCount / perPage;
       totalPages = Math.ceil(totalPages);
-      var hasNextPage = page < totalPages;
+      var hasNextPage = parseInt(page) < totalPages;
       res.send({
         success: 1,
         statusCode: 200,
