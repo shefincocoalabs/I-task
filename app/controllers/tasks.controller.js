@@ -442,7 +442,8 @@
       return;
     };
     var filter = {
-      _id: taskId
+      _id: taskId,
+      status: 1
     };
     var update = {
       status: 0
