@@ -172,7 +172,8 @@
           path: 'projectId',
           select: 'projectName dueDate'
         }]).limit(perPage);
-        taskList = taskArray.concat(taskListAssigned);
+        var ids = new Set(taskArray.map(d => d.ID));
+        taskList = [...taskArray, ...taskListAssigned.filter(d => !ids.has(d.ID))];
         itemsCount = taskList.length;
       } else {
         taskList = await Task.find(filterMemberTasks, queryProjectionMemberTask, pageParams).populate([{

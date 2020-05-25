@@ -172,11 +172,20 @@
         }, JWT_KEY, {
           expiresIn: '30 days'
         });
-      } else {
-        user = await Members.findOne({
-          email: email,
-          password: password
-        });
+      } else if (userType == 'SubAdmin' || userType == 'Member') {
+        if (userType == 'SubAdmin') {
+          user = await Members.findOne({
+            email: email,
+            password: password,
+            type: 'SubAdmin'
+          });
+        } else if (userType == 'Member') {
+          user = await Members.findOne({
+            email: email,
+            password: password,
+            type: 'Member'
+          })
+        }
         if (!user) {
           return res.send({
             success: 0,
