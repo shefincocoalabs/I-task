@@ -190,8 +190,8 @@ exports.listProject = async (req, res) => {
             var totalPages;
             var hasNextPage;
             if (userType == 'SubAdmin') {
-                // var ids = new Set(items.map(d => d.ID));
-                // concatResult = [...items, ...response.filter(d => !ids.has(d.ID))];
+                var ids = new Set(items.map(d => d.ID));
+                concatResult = [...items, ...response.filter(d => !ids.has(d.ID))];
 
                 itemsCount = concatResult.length;
                 totalPages = itemsCount / perPage;
