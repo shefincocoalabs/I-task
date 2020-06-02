@@ -252,12 +252,11 @@ exports.listProject = async (req, res) => {
             })
         }
     } catch (err) {
-        // res.send({
-        //     success: 0,
-        //     statusCode: 500,
-        //     message: err.message
-        // });
-        console.log(err);
+        res.send({
+            success: 0,
+            statusCode: 500,
+            message: err.message
+        });
     };
 };
 
