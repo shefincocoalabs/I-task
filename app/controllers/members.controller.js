@@ -271,6 +271,9 @@ exports.personalInfo = async (req, res) => {
     };
     try {
         let memberInfo = await Member.findOne(filter, queryProjection);
+        console.log('memberInfo');
+        console.log(memberInfo);
+        console.log('memberInfo');
         res.send({
             success: 1,
             statusCode: 200,
