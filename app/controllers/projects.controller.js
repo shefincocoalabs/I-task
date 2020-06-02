@@ -191,6 +191,9 @@ exports.listProject = async (req, res) => {
             var hasNextPage;
             if (userType == 'SubAdmin') {
                 var ids = new Set(items.map(d => d.ID));
+                console.log('response');
+                console.log(response);
+                console.log('response');
                 concatResult = [...items, ...response.filter(d => !ids.has(d.ID))];
                 console.log('concatResult');
                 console.log(concatResult);
