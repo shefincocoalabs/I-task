@@ -148,12 +148,16 @@ exports.listProject = async (req, res) => {
     try {
         if (userType == 'Admin' || userType == 'SubAdmin') {
             if (userType == 'SubAdmin') {
-                projectDataOfMembers(userId, page, perPage, searchObj, pageParams.skip, pageParams.limit).then(result => {
-                    response = result.memberDetailsArray;
-                    console.log('response top');
-                    console.log(response);
-                    console.log('response top');
-                })
+                // projectDataOfMembers(userId, page, perPage, searchObj, pageParams.skip, pageParams.limit).then(result => {
+                //     response = result.memberDetailsArray;
+                //     console.log('response top');
+                //     console.log(response);
+                //     console.log('response top');
+                // });
+
+                (async () => {
+                    response = await projectDataOfMembers(userId, page, perPage, searchObj, pageParams.skip, pageParams.limit)
+                  })()
             }
             let listProjects = await Project.find(filters, queryProjection, pageParams).limit(perPage);
             itemsCount = await Project.countDocuments(filters);
