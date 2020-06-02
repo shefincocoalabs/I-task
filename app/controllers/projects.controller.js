@@ -192,7 +192,9 @@ exports.listProject = async (req, res) => {
             if (userType == 'SubAdmin') {
                 var ids = new Set(items.map(d => d.ID));
                 concatResult = [...items, ...response.filter(d => !ids.has(d.ID))];
-
+                console.log('concatResult');
+                console.log(concatResult);
+                console.log('concatResult');
                 itemsCount = concatResult.length;
                 totalPages = itemsCount / perPage;
                 totalPages = Math.ceil(totalPages);
@@ -245,11 +247,12 @@ exports.listProject = async (req, res) => {
             })
         }
     } catch (err) {
-        res.send({
-            success: 0,
-            statusCode: 500,
-            message: err.message
-        });
+        // res.send({
+        //     success: 0,
+        //     statusCode: 500,
+        //     message: err.message
+        // });
+        console.log(err);
     };
 };
 
