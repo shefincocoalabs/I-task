@@ -158,7 +158,7 @@ exports.listProject = async (req, res) => {
                 (async () => {
                     var result = await projectDataOfMembers(userId, page, perPage, searchObj, pageParams.skip, pageParams.limit);
                     response = result.memberDetailsArray;
-                  })()
+                })()
             }
             let listProjects = await Project.find(filters, queryProjection, pageParams).limit(perPage);
             itemsCount = await Project.countDocuments(filters);
@@ -199,13 +199,7 @@ exports.listProject = async (req, res) => {
             var hasNextPage;
             if (userType == 'SubAdmin') {
                 var ids = new Set(items.map(d => d.ID));
-                console.log('response');
-                console.log(response);
-                console.log('response');
                 concatResult = [...items, ...response.filter(d => !ids.has(d.ID))];
-                console.log('concatResult');
-                console.log(concatResult);
-                console.log('concatResult');
                 itemsCount = concatResult.length;
                 totalPages = itemsCount / perPage;
                 totalPages = Math.ceil(totalPages);
