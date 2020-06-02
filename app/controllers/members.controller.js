@@ -174,18 +174,19 @@ exports.listMember = async (req, res) => {
                 ]
             }
             // ** Ids array represents all the subadmins created by superadmin **
-            var memberList = await Member.aggregate([{
-                    $match: matchCondition
-                }, {
-                    $project: queryProjection
-                },
-                {
-                    $skip: parseInt(pageParams.skip)
-                },
-                {
-                    $limit: parseInt(pageParams.limit)
-                }
-            ]);
+            // var memberList = await Member.aggregate([{
+            //         $match: matchCondition
+            //     }, {
+            //         $project: queryProjection
+            //     },
+            //     {
+            //         $skip: parseInt(pageParams.skip)
+            //     },
+            //     {
+            //         $limit: parseInt(pageParams.limit)
+            //     }
+            // ]);
+            var memberList = await Member.find(matchCondition, queryProjection, pageParams).limit(perPage);
             itemsCount = await Member.countDocuments(matchCondition);
         } else if (userType == 'SubAdmin') {
             let subAdminDetails = await Member.findOne({
