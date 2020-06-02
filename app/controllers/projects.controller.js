@@ -156,7 +156,8 @@ exports.listProject = async (req, res) => {
                 // });
 
                 (async () => {
-                    response = await projectDataOfMembers(userId, page, perPage, searchObj, pageParams.skip, pageParams.limit)
+                    var result = await projectDataOfMembers(userId, page, perPage, searchObj, pageParams.skip, pageParams.limit);
+                    response = result.memberDetailsArray;
                   })()
             }
             let listProjects = await Project.find(filters, queryProjection, pageParams).limit(perPage);
