@@ -23,7 +23,9 @@ module.exports = (app) => {
     app.get('/projects/helper',auth,projects.helperApi);
     app.get('/projects/membersProjectData',auth, projects.membersProjectData);
     app.patch('/projects/changeAdmin',auth, projects.changeAdmin);
-    app.delete('/projects/delete-task',auth, projects.deleteTask)
+    app.delete('/projects/delete-task',auth, projects.deleteTask);
+    // ** Projects to be listed while creating tasks **
+    app.get('/projects/list-projects',auth, projects.listProjectsUnderTasks);
 };
 
 

@@ -964,24 +964,45 @@ exports.deleteTask = async (req, res) => {
 exports.listProjectsUnderTasks = async (req, res) => {
     var userData = req.identity.data;
     var userId = userData.userId;
-    var queryProjection = {
-        createdBy: 1
+    var params = req.query;
+    var page = params.page || 1;
+    page = page > 0 ? page : 1;
+    var perPage = Number(params.perPage) || membersConfig.resultsPerPage;
+    perPage = perPage > 0 ? perPage : membersConfig.resultsPerPage;
+    var offset = (page - 1) * perPage;
+    var pageParams = {
+        skip: offset,
+        limit: perPage
     };
     try {
         var findSuperAdmin = await Members.findOne({
-            createdBy: userId,
+            _id: userId,
             status: 1
         });
         var creator = findSuperAdmin.createdBy;
-        var projectList = await Project.find({
+        var findCriteria = {
             projectCreatedBy: creator,
             isArchieved: false,
             isCompleted: false,
             status: 1
-        });
+        };
+        var queryProjection = {
+            projectName: 1,
+            projectCode: 1
+        };
+        var projectList = await Project.find(findCriteria, queryProjection, pageParams).limit(perPage);
+        var itemsCount = await Project.countDocuments(findCriteria);
+        var totalPages = itemsCount / perPage;
+        totalPages = Math.ceil(totalPages);
+        var hasNextPage = page < totalPages;
         res.send({
             success: 1,
             items: projectList,
+            page: parseInt(page),
+            perPage: parseInt(perPage),
+            hasNextPage: hasNextPage,
+            totalItems: itemsCount,
+            totalPages: totalPages,
             statusCode: 200,
             message: 'Projects listed successfully'
         });
