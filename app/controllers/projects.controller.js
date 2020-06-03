@@ -56,7 +56,7 @@ exports.addProject = async (req, res) => {
             projectCreatedBy: userId
         });
         if (projectsCount < 10) {
-            projectCode = 'PO' + projectsCount;
+            projectCode = 'P0' + projectsCount;
         } else {
             projectCode = 'P' + projectsCount;
         }
@@ -1023,6 +1023,7 @@ exports.listProjectsUnderTasks = async (req, res) => {
 }
 
 async function projectDataOfMembers(userId, page, perPage, searchObj, skip, limit) {
+    console.log(userId);
     let listProjectMemberData = await Task.aggregate([{
             $match: {
                 memberId: ObjectId(userId),
@@ -1083,7 +1084,7 @@ async function projectDataOfMembers(userId, page, perPage, searchObj, skip, limi
             }
         }
     ]);
-    let countProjectMemberData = countProjectMemberDatas[0].projectId.length;
+    let countProjectMemberData = countProjectMemberDatas[0]?countProjectMemberDatas[0].projectId.length:0;
     // let countProjectMemberData = listProjectMemberData.length;
     var totalPages = countProjectMemberData / perPage;
     totalPages = Math.ceil(totalPages);
