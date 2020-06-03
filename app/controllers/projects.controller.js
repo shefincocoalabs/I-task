@@ -970,6 +970,7 @@ exports.deleteTask = async (req, res) => {
 
 exports.listProjectsUnderTasks = async (req, res) => {
     var userData = req.identity.data;
+    var userType = userData.type;
     var userId = userData.userId;
     var params = req.query;
     var page = params.page || 1;
@@ -981,18 +982,28 @@ exports.listProjectsUnderTasks = async (req, res) => {
         skip: offset,
         limit: perPage
     };
+    var findCriteria;
     try {
-        var findSuperAdmin = await Members.findOne({
-            _id: userId,
-            status: 1
-        });
-        var creator = findSuperAdmin.createdBy;
-        var findCriteria = {
-            projectCreatedBy: creator,
-            isArchieved: false,
-            isCompleted: false,
-            status: 1
-        };
+        if (userType == 'SubAdmin') {
+            var findSuperAdmin = await Members.findOne({
+                _id: userId,
+                status: 1
+            });
+            var creator = findSuperAdmin.createdBy;
+            findCriteria = {
+                projectCreatedBy: creator,
+                isArchieved: false,
+                isCompleted: false,
+                status: 1
+            };
+        } else if (userType == 'Admin') {
+            findCriteria = {
+                projectCreatedBy: userId,
+                isArchieved: false,
+                isCompleted: false,
+                status: 1
+            };
+        }
         var queryProjection = {
             projectName: 1,
             projectCode: 1
@@ -1023,7 +1034,6 @@ exports.listProjectsUnderTasks = async (req, res) => {
 }
 
 async function projectDataOfMembers(userId, page, perPage, searchObj, skip, limit) {
-    console.log(userId);
     let listProjectMemberData = await Task.aggregate([{
             $match: {
                 memberId: ObjectId(userId),
@@ -1084,7 +1094,7 @@ async function projectDataOfMembers(userId, page, perPage, searchObj, skip, limi
             }
         }
     ]);
-    let countProjectMemberData = countProjectMemberDatas[0]?countProjectMemberDatas[0].projectId.length:0;
+    let countProjectMemberData = countProjectMemberDatas[0] ? countProjectMemberDatas[0].projectId.length : 0;
     // let countProjectMemberData = listProjectMemberData.length;
     var totalPages = countProjectMemberData / perPage;
     totalPages = Math.ceil(totalPages);
