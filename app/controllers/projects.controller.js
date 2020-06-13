@@ -676,14 +676,6 @@ exports.helperApi = async (req, res) => {
             }
         },
         {
-            $group: {
-                _id: null,
-                memberId: {
-                    $addToSet: "$memberId"
-                }
-            }
-        },
-        {
             $lookup: {
                 from: "Projects",
                 localField: "projectId",
@@ -723,6 +715,16 @@ exports.helperApi = async (req, res) => {
             $limit: parseInt(pageParams.limit)
         }
     ]);
+
+    projectMembers = projectMembers.reduce((acc, current) => {
+        const x = acc.find(item => item.member.fullName === current.member.fullName);
+        if (!x) {
+            return acc.concat([current]);
+        } else {
+            return acc;
+        }
+    }, []);
+
     let itemsCount = await Task.countDocuments({
         projectId: projectId,
         status: 1
