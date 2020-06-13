@@ -195,10 +195,11 @@ exports.listMember = async (req, res) => {
             });
             var createdBy = subAdminDetails.createdBy;
             memberList = await Member.find({
-                $or: [{
-                        createdBy: createdBy,
-                        status: 1
-                    },
+                $or: [
+                    // {
+                    //     createdBy: createdBy,
+                    //     status: 1
+                    // },
                     {
                         createdBy: userId,
                         status: 1
