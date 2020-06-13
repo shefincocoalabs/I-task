@@ -136,14 +136,45 @@
     };
     try {
       if (userType == 'Admin') {
-        taskList = await Task.find(filters, queryProjection, pageParams).populate([{
+        // taskList = await Task.find(filters, queryProjection, pageParams).populate([{
+        //   path: 'memberId',
+        //   select: 'fullName image'
+        // }, {
+        //   path: 'projectId',
+        //   select: 'projectName dueDate'
+        // }]).limit(perPage);
+        var subAdmins = await Member.find({
+          createdBy: userId,
+          type: 'SubAdmin',
+          status: 1
+        });
+        var subAdminIds = [];
+        for (var i = 0; i < subAdmins.length; i++) {
+          subAdminIds.push(subAdmins[i]._id);
+        };
+        var matchCondition = {
+          $or: [{
+              taskCreatedBy: {
+                $in: subAdminIds,
+              },
+              status: 1
+            },
+            {
+              taskCreatedBy: ObjectId(userId),
+              status: 1
+            }
+          ]
+        };
+        taskList = await Task.find(matchCondition, queryProjection, pageParams)
+        .populate([{
           path: 'memberId',
           select: 'fullName image'
         }, {
           path: 'projectId',
           select: 'projectName dueDate'
         }]).limit(perPage);
-        itemsCount = await Task.countDocuments(filters);
+        console.log(taskList);
+        itemsCount = await Task.countDocuments(matchCondition);
       } else if (userType == 'SubAdmin') {
         let projectsList = await Project.find({
           admin: userId,
