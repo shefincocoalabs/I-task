@@ -173,7 +173,6 @@
           path: 'projectId',
           select: 'projectName dueDate'
         }]).limit(perPage);
-        console.log(taskList);
         itemsCount = await Task.countDocuments(matchCondition);
       } else if (userType == 'SubAdmin') {
         let projectsList = await Project.find({

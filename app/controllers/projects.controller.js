@@ -676,6 +676,14 @@ exports.helperApi = async (req, res) => {
             }
         },
         {
+            $group: {
+                _id: null,
+                memberId: {
+                    $addToSet: "$memberId"
+                }
+            }
+        },
+        {
             $lookup: {
                 from: "Projects",
                 localField: "projectId",
